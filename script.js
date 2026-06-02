@@ -1059,17 +1059,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // ===== LOADING SCREEN =====
 function initLoadingScreen() {
-    if (sessionStorage.getItem('algoInfinityVerse_appLoaded')) {
-        document.getElementById('loading-screen').style.display = 'none';
-        initializeAnimations();
-        return;
-    }
-    
-    setTimeout(() => {
-        document.getElementById('loading-screen').classList.add('hidden');
-        initializeAnimations();
-        sessionStorage.setItem('algoInfinityVerse_appLoaded', 'true');
-    }, 2000);
+  setTimeout(() => {
+    document.getElementById("loading-screen").classList.add("hidden");
+    initializeAnimations();
+  }, 2000);
 }
 
 // ===== NAVBAR =====
@@ -1678,11 +1671,34 @@ function initPracticeSection() {
 
   // Search bar
   const searchInput = document.getElementById("searchInput");
-  if (searchInput) {
-    searchInput.addEventListener("input", (e) => {
-      renderProblems(currentFilter, e.target.value.toLowerCase());
-    });
-  }
+const clearBtn = document.getElementById("clearSearchBtn");
+
+if (searchInput) {
+  searchInput.addEventListener("input", (e) => {
+    const value = e.target.value.toLowerCase();
+
+    renderProblems(currentFilter, value);
+
+    // Show/hide clear button
+    if (value.length > 0) {
+      clearBtn.classList.add("visible");
+    } else {
+      clearBtn.classList.remove("visible");
+    }
+  });
+}
+
+// Clear search functionality
+if (clearBtn) {
+  clearBtn.addEventListener("click", () => {
+    searchInput.value = "";
+    clearBtn.classList.remove("visible");
+
+    renderProblems(currentFilter, "");
+
+    searchInput.focus();
+  });
+}
 
   // Initial render
   renderProblems("all");
