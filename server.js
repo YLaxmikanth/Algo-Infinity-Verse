@@ -3,6 +3,7 @@ import fs from "fs/promises";
 import http from "http";
 import path from "path";
 import { fileURLToPath } from "url";
+import { initializeFirebase, getDb, COLLECTIONS } from "./firebase.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -150,6 +151,30 @@ function sessionCookie(token, req) {
 
 function clearSessionCookie() {
   return `${SESSION_COOKIE}=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0`;
+}
+
+const db = initializeFirebase();
+const useFirestore = !!db;
+
+async function getUserByEmail(email) {
+  if (!useFirestore) {
+    const users = await readUsers();
+    return users.find((u) => u.email === email) || null;
+  }
+  const snapshot = await db.collection(COLLECTIONS.USERS).where("email", "==", email).limit(1).get();
+  if (snapshot.empty) return null;
+  return { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
+}
+
+async function createUser(userData) {
+  if (!useFirestore) {
+    const users = await readUsers();
+    users.push(userData);
+    await writeUsers(users);
+    return userData;
+  }
+  const docRef = await db.collection(COLLECTIONS.USERS).add(userData);
+  return { id: docRef.id, ...userData };
 }
 
 async function ensureUserStore() {
