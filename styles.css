@@ -1416,14 +1416,15 @@ body {
 
 .profile-stats {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
+  /* Automatically wraps columns if they shrink below 110px */
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); 
+  gap: 0.8rem; /* Slightly reduced gap for better fit */
   margin-bottom: 1.5rem;
 }
 
 .profile-stat {
   text-align: center;
-  padding: 1rem;
+  padding: 0.8rem; /* Slightly reduced padding to prevent text squishing */
   background: var(--dark-card);
   border-radius: 12px;
 }
