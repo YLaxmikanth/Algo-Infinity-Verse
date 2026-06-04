@@ -1000,6 +1000,10 @@ let userProgress = {
 
 applySavedTheme();
 
+// ===== QUIZ EDITOR (state) =====
+// Declared early to avoid TDZ issues when referenced by event handlers.
+let currentProblem = null;
+
 // ===== INITIALIZATION =====
 document.addEventListener("DOMContentLoaded", () => {
   console.log("DOMContentLoaded fired, initializing app...");
@@ -1649,7 +1653,7 @@ function formatQuizTime(seconds) {
 let currentQuiz = null;
 let quizStartTime = null;
 let quizTimerInterval = null;
-let currentNotesProblemId = null;
+// let currentNotesProblemId = null; // duplicate declaration removed
 
 function openQuizModal() {
   console.log("Opening quiz modal");
@@ -2732,18 +2736,40 @@ function solveProblem() {
 // ===== SCROLL EFFECTS =====
 function initScrollEffects() {
   const scrollTopBtn = document.getElementById("scrollTopBtn");
+  const backToTopBtn = document.getElementById("backToTopBtn");
 
-  window.addEventListener("scroll", () => {
-    if (window.scrollY > 500) {
-      scrollTopBtn.classList.add("visible");
-    } else {
-      scrollTopBtn.classList.remove("visible");
+  // Ensure missing elements don't break the rest of the page scripts.
+  const hasScrollTopBtn = !!scrollTopBtn;
+  const hasBackToTopBtn = !!backToTopBtn;
+
+  const setVisibleState = () => {
+    const shouldShow = window.scrollY > 500;
+
+    if (hasScrollTopBtn) {
+      scrollTopBtn.classList.toggle("visible", shouldShow);
     }
-  });
 
-  scrollTopBtn.addEventListener("click", () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  });
+    // CSS for back-to-top uses .show
+    if (hasBackToTopBtn) {
+      backToTopBtn.classList.toggle("show", shouldShow);
+    }
+  };
+
+  window.addEventListener("scroll", setVisibleState);
+  setVisibleState();
+
+  if (hasScrollTopBtn) {
+    scrollTopBtn.addEventListener("click", () => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
+
+  if (hasBackToTopBtn) {
+    backToTopBtn.addEventListener("click", () => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
+
 
   // Intersection Observer for animations
   const observer = new IntersectionObserver(
@@ -2900,7 +2926,10 @@ function loadUserData() {
 }
 
 // ===== QUIZ EDITOR =====
-let currentProblem = null;
+// currentProblem declared near the top-level to avoid TDZ issues.
+
+
+// currentNotesProblemId is already declared earlier; do not redeclare it here.
 
 function openTopicModal(topic) {
   const modal = document.getElementById("topicModal");
@@ -2924,7 +2953,6 @@ function closeTopicModal() {
   document.getElementById("topicModal").classList.remove("active");
 }
 
-let currentNotesProblemId = null;
 
 function openNotesModal(problemId) {
   const modal = document.getElementById("notesModal");
@@ -3577,20 +3605,46 @@ function initNewsletterValidation() {
     });
   });
 }
-// Back To Top Button
-const backToTopBtn = document.getElementById("backToTopBtn");
+// Back To Top Button (supports both ids: backToTopBtn and scrollTopBtn)
+function initBackToTopButtons() {
+  const backToTopBtn = document.getElementById("backToTopBtn");
+  const scrollTopBtn = document.getElementById("scrollTopBtn");
 
-window.addEventListener("scroll", () => {
-  if (window.scrollY > 300) {
-    backToTopBtn.classList.add("show");
-  } else {
-    backToTopBtn.classList.remove("show");
+  // backToTopBtn uses .back-to-top styles + .show class
+  if (backToTopBtn) {
+    window.addEventListener("scroll", () => {
+      if (window.scrollY > 300) {
+        backToTopBtn.classList.add("show");
+      } else {
+        backToTopBtn.classList.remove("show");
+      }
+    });
+
+    backToTopBtn.addEventListener("click", () => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    });
   }
-});
 
-backToTopBtn.addEventListener("click", () => {
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth",
-  });
-});
+  // scrollTopBtn uses .scroll-top-btn styles + .visible class
+  if (scrollTopBtn) {
+    window.addEventListener("scroll", () => {
+      if (window.scrollY > 300) {
+        scrollTopBtn.classList.add("visible");
+      } else {
+        scrollTopBtn.classList.remove("visible");
+      }
+    });
+
+    scrollTopBtn.addEventListener("click", () => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    });
+  }
+}
+
+initBackToTopButtons();
