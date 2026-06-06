@@ -3302,8 +3302,25 @@ function loadUserData() {
       if (!userProgress.quizScores) {
         userProgress.quizScores = {};
       }
-      if (!userProgress.recentProblems) {
-        userProgress.recentProblems = [];
+
+      // Sanitize recently viewed problems (can be corrupted in localStorage)
+      const practiceProblemIds = new Set(practiceProblems.map((p) => p.id));
+      const rawRecent = Array.isArray(userProgress.recentProblems)
+        ? userProgress.recentProblems
+        : [];
+
+      const sanitizedRecent = rawRecent
+        .map((id) => Number(id))
+        .filter((id) => Number.isFinite(id) && practiceProblemIds.has(id));
+
+      const hadCorruption =
+        !Array.isArray(userProgress.recentProblems) ||
+        sanitizedRecent.length !== rawRecent.length;
+
+      userProgress.recentProblems = sanitizedRecent.slice(0, 5);
+
+      if (hadCorruption) {
+        saveUserData();
       }
 
       // Update streak if user was active yesterday
@@ -3311,6 +3328,7 @@ function loadUserData() {
         const lastActive = new Date(userProgress.lastActive);
         const today = new Date();
         const diffDays = getDaysDifference(lastActive, today);
+
 
         if (diffDays === 0) {
           // Already active today
