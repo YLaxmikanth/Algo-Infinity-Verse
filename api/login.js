@@ -87,12 +87,6 @@ async function normalizeAuthDelay() {
   );
 }
 
-function auditAuthEvent(event, email) {
-  console.log(
-    `[AUTH_AUDIT] ${event} | ${email} | ${new Date().toISOString()}`
-  );
-}
-
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
   try {
@@ -103,7 +97,6 @@ export default async function handler(req, res) {
     if (isRateLimited(clientId)) {
       await normalizeAuthDelay();
 
-      auditAuthEvent("RATE_LIMITED", cleanEmail);
 
       return res.status(429).json({
         error: "Authentication failed.",
@@ -116,13 +109,11 @@ export default async function handler(req, res) {
 
       await normalizeAuthDelay();
 
-      auditAuthEvent("FAILED_LOGIN", cleanEmail);
 
       return res.status(401).json({
         error: "Authentication failed.",
       });
     }
-    auditAuthEvent("SUCCESSFUL_LOGIN", cleanEmail);
     const token=createSessionToken(user);
     const rememberToken = await storeRememberSession(user);
     const headers = { "Set-Cookie": sessionCookie(token) };

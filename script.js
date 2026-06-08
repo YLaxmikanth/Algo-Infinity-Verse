@@ -1173,7 +1173,7 @@ let currentProblem = null;
 
 // ===== INITIALIZATION =====
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("DOMContentLoaded fired, initializing app...");
+
   loadUserData();
   initLoadingScreen();
   initNavbar();
@@ -1195,7 +1195,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Update profile display after loading
   updateProfile();
-  console.log("App initialization complete");
 
   // Language change handler for code editor
   const langSelect = document.getElementById("languageSelect");
@@ -1420,7 +1419,6 @@ const avatarOptions = [
 
 function initProfileEdit() {
   try {
-    console.log("Initializing profile edit");
     const avatarContainer = document.getElementById("avatarOptions");
     if (!avatarContainer) {
       console.warn("Avatar options container not found");
@@ -1428,7 +1426,6 @@ function initProfileEdit() {
     }
 
     const currentAvatar = userProgress.avatar || "🚀";
-    console.log("Current avatar:", currentAvatar);
 
     avatarContainer.innerHTML = avatarOptions
       .map(
@@ -1446,7 +1443,6 @@ function initProfileEdit() {
           .forEach((o) => o.classList.remove("selected"));
         opt.classList.add("selected");
         selectedAvatar = opt.dataset.avatar;
-        console.log("Selected avatar:", selectedAvatar);
       });
     });
 
@@ -1456,7 +1452,6 @@ function initProfileEdit() {
     }
 
     selectedAvatar = currentAvatar;
-    console.log("Profile edit initialized");
   } catch (error) {
     console.error("Error in initProfileEdit:", error);
   }
@@ -1464,7 +1459,6 @@ function initProfileEdit() {
 
 function openProfileModal() {
   try {
-    console.log("Opening profile modal");
     const modal = document.getElementById("profileEditModal");
     if (!modal) {
       console.error("Profile edit modal not found");
@@ -1472,7 +1466,6 @@ function openProfileModal() {
     }
     initProfileEdit();
     modal.classList.add("active");
-    console.log("Profile modal opened");
   } catch (error) {
     console.error("Error opening profile modal:", error);
   }
@@ -1499,7 +1492,6 @@ function saveProfileChanges() {
 // Profile click handler
 document.addEventListener("click", (e) => {
   if (e.target.closest(".profile-edit-btn")) {
-    console.log("Profile edit button clicked");
     openProfileModal();
   }
 });
@@ -1670,17 +1662,14 @@ function getQuizTopicKey(topic) {
 
 function initQuizSection() {
   try {
-    console.log("Initializing Quiz Section...");
     const quizGrid = document.querySelector(".quiz-grid");
     if (!quizGrid) {
       console.warn("Quiz grid element not found");
       return;
     }
-    console.log("Quiz grid found, topics count:", dsaTopics.length);
 
     dsaTopics.forEach((topic, index) => {
       const topicKey = getQuizTopicKey(topic);
-      console.log(`Creating quiz card for ${topic.name} (key: ${topicKey})`);
       const card = document.createElement("div");
       card.className = "quiz-card animate-in";
       card.style.animationDelay = `${index * 0.1}s`;
@@ -1705,10 +1694,8 @@ function initQuizSection() {
             `;
       quizGrid.appendChild(card);
       card.addEventListener("click", () => {
-        console.log("QUIZ CARD CLICKED");
         startQuiz(topicKey);
       });
-      console.log(`Quiz card created for ${topic.name}`);
 
       // Update progress display
       updateQuizProgressDisplay(topic);
@@ -1718,16 +1705,12 @@ function initQuizSection() {
       if (startBtn) {
         startBtn.addEventListener("click", (e) => {
          e.stopPropagation();
-           console.log(`Start Quiz clicked for ${topic.name}`);
-           console.log("QUIZ BUTTON CLICKED");
-           console.log("Topic Key:", topicKey);
            startQuiz(topicKey);
          });
       } else {
         console.error("Start quiz button not found for topic:", topic.name);
       }
     });
-    console.log("Quiz Section initialization complete");
   } catch (error) {
     console.error("Error initializing quiz section:", error);
   }
@@ -1754,9 +1737,6 @@ function updateQuizProgressDisplay(topic) {
 }
 
 function startQuiz(topicKey) {
-  console.log("startQuiz called");
-  console.log("topicKey =", topicKey);
-  console.log("startQuiz called with:", topicKey);
 
   // Normalize topicKey defensively in case caller passes name/variant.
   const normalizedTopicKey = getQuizTopicKey(String(topicKey));
@@ -1863,7 +1843,6 @@ let quizTimerInterval = null;
 // let currentNotesProblemId = null; // duplicate declaration removed
 
 function openQuizModal() {
-  console.log("Opening quiz modal");
   try {
     const modal = document.getElementById("quizModal");
     if (modal) {
@@ -1910,8 +1889,6 @@ function closeQuizModal() {
 
 
 function renderQuizQuestion() {
-  console.log("renderQuizQuestion called");
-  console.log(currentQuiz);
   if (
     !currentQuiz ||
     currentQuiz.currentQuestionIndex >= currentQuiz.questions.length
@@ -1923,9 +1900,6 @@ function renderQuizQuestion() {
   const question = currentQuiz.questions[currentQuiz.currentQuestionIndex];
   const questionEl = document.getElementById("topicQuizQuestionText");
   const optionsEl = document.getElementById("topicQuizOptions");
-  console.log("QUESTION =", question);
-  console.log("questionEl =", questionEl);
-  console.log("optionsEl =", optionsEl);
   const progressEl = document.getElementById("topicQuizProgress");
   const counterEl = document.getElementById("topicQuizCounter");
 
@@ -2030,7 +2004,6 @@ function finishQuiz() {
   saveUserData();
   document.getElementById("topicQuizQuestionText").style.display = "none";
   document.getElementById("topicQuizOptions").style.display = "none";
-  console.log("RESULTS:", score, total, percentage, xpEarned, completionTime);
   const reviewSnapshot = JSON.parse(JSON.stringify(currentQuiz));
   lastQuizReview = reviewSnapshot;
 lastQuizResultData = {
@@ -2055,8 +2028,6 @@ document.getElementById("topicQuizCounter").style.display = "none";
   updateQuizProgressDisplay(topicKey);
   updateDashboard();
   updateGamification();
-  console.log("SAVING REVIEW");
-  console.log(currentQuiz);
 }
 
 function showQuizResults(score, total, percentage, xpEarned, completionTime) {
@@ -2328,7 +2299,6 @@ data-id="${problem.id}">
   problemsGrid.querySelectorAll(".notes-btn").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
-      console.log("NOTES CLICKED");
       const problemId = parseInt(btn.dataset.id);
       currentNotesProblemId = problemId;
       openNotesModal(problemId);
@@ -2361,7 +2331,6 @@ function toggleFavorite(problemId) {
 }
 
 function openNotesModal(problemId) {
-  console.log("OPENING MODAL", problemId);
   currentNotesProblemId = problemId;
 
   const modal = document.getElementById("notesModal");
@@ -5118,7 +5087,6 @@ if (document.readyState === 'loading') {
 // ===== FOOTER QUESTION HANDLERS =====
 // Initialize some animations after page load
 window.addEventListener("load", () => {
-  console.log("Algo Infinity Verse loaded successfully! 🚀");
 });
 
 // ===== NEWSLETTER FORM VALIDATION =====

@@ -231,7 +231,6 @@ function initExportPdf() {
 
 // Page Initialization
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("Resume Page Initializing...");
   
   // Page utilities setup
   initLoader();
@@ -247,5 +246,4 @@ document.addEventListener("DOMContentLoaded", () => {
   renderBadges();
   initExportPdf();
 
-  console.log("Resume Page Initialization Complete.");
 });

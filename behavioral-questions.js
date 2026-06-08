@@ -819,7 +819,6 @@ const behavioralQuestions = [
 ];
 // ===== INITIALIZATION & STATE MANAGEMENT =====
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("Cheat Sheets Page Initialized");
   
   // Hide loading screen
   setTimeout(() => {

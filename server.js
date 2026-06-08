@@ -462,7 +462,6 @@ if (process.env.VERCEL !== "1") {
         if (!process.env.SESSION_SECRET) {
           console.warn("Using a development SESSION_SECRET. Set SESSION_SECRET before deploying.");
         }
-        console.log(`Algo Infinity Verse running at http://${host}:${port}`);
       });
     })
     .catch((error) => {

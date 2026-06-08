@@ -5,7 +5,6 @@ import { initPrint } from "./modules/print.js";
 import { initScrollTop } from "./modules/scrollTop.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("Cheat Sheets Page Initialized");
 
   initLoader();
   initTheme();
