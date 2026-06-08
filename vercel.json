@@ -20,6 +20,10 @@
     {
       "source": "/python-learning",
       "destination": "/python-learning.html"
+    },
+    {
+      "source": "/javascript-learning",
+      "destination": "/javascript-learning.html"
     }
   ],
   "headers": [
