@@ -62,6 +62,11 @@
             <a href="powerbi-learning.html" class="dropdown-item" role="menuitem">Learn Power BI</a>
             <a href="php-learning.html" class="dropdown-item active" role="menuitem">Learn PHP</a>
             <a href="oop-learning.html" class="dropdown-item " role="menuitem">Learn OOP</a>
+<<<<<<< HEAD
+=======
+            <a href="computer-architecture.html" class="dropdown-item " role="menuitem">Learn Architecture</a>
+            <a href="tree-traversal.html" class="dropdown-item " role="menuitem">Tree Traversal</a>
+>>>>>>> 227
             <a href="sorting-visualizer.html" class="dropdown-item" role="menuitem">Sorting Visualizer</a>
           </div>
         </li>
@@ -1180,9 +1185,16 @@ echo $_COOKIE[&quot;user&quot;] ?? &quot;Not logged in&quot;;
               <li><a href="c-learning.html">Learn C</a></li>
               <li><a href="dbms-learning.html">Learn DBMS</a></li>
               <li><a href="powerbi-learning.html">Learn Power BI</a></li>
+<<<<<<< HEAD
               <li>
             <a href="oop-learning.html">Learn OOP</a></li>
               <li><a href="php-learning.html">Learn PHP</a></li>
+=======
+              <li><a href="php-learning.html">Learn PHP</a>
+            <a href="oop-learning.html">Learn OOP</a>
+            <a href="computer-architecture.html">Learn Architecture</a>
+            <a href="tree-traversal.html">Tree Traversal</a></li>
+>>>>>>> 227
               <li><a href="resume.html">Coding Resume</a></li>
               <li><a href="support-page/index.html">Support</a></li>
               <li><a href="about-us.html">About us</a></li>
