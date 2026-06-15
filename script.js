@@ -1769,6 +1769,13 @@ let userProgress = {
   avatar: "🚀",
   completedProblems: [],
   completedDailyChallenges: [],
+  codingPersonality: {
+    type: "brute-force first",
+    bruteForceCount: 1,
+    slowAccurateCount: 0,
+    greedyCount: 0,
+    overOptimizerCount: 0
+  },
 
   favoriteProblems: [], //here i have added a new property to store the user's favorite problems
   recentProblems: [], //here i have added a new property to store the user's recent problems
@@ -2479,17 +2486,7 @@ function updateQuizProgressDisplay(topic) {
   attemptsEl.textContent = quizData.attempts;
 }
 
-function startQuiz(topicKey) {
 
-  // Normalize topicKey defensively in case caller passes name/variant.
-  const normalizedTopicKey = getQuizTopicKey(String(topicKey));
-  const topicQuiz = quizQuestions[normalizedTopicKey];
-
-
-    progressFill.style.width = `${progressPercent}%`;
-    bestScoreEl.textContent = `${quizData.bestScore}%`;
-    attemptsEl.textContent = quizData.attempts;
-}
 function showQuizLoading(topicName) {
     const loader = document.getElementById('quizLoadingScreen');
     const topic = document.getElementById('quizLoadingTopic');
@@ -2532,18 +2529,6 @@ function startQuiz(topic) {
         showNotification('No quiz questions available for this topic yet!', 'error');
         return;
     }
-
-  if (!topicQuiz || topicQuiz.length === 0) {
-    console.error("Quiz data not found for:", {
-      rawTopicKey: topicKey,
-      normalizedTopicKey,
-      availableKeys: Object.keys(quizQuestions),
-    });
-    return;
-  }
-
-  // Ensure we use the normalized key everywhere below.
-  topicKey = normalizedTopicKey;
 
 
 
@@ -3029,48 +3014,78 @@ function renderProblems(filter = "all", searchQuery = "") {
     totalCountEl.textContent = practiceProblems.length;
   }
 
+  const cpType = userProgress.codingPersonality ? userProgress.codingPersonality.type : "brute-force first";
+
   problemsGrid.innerHTML = filteredProblems
     .map(
-      (problem) => `
-        <div class="problem-card animate-in" data-id="${problem.id}">
-            <div class="problem-header">
-              <h3 class="problem-title">${problem.title}</h3>
-               <div class="problem-actions">
-               <button class="favorite-btn ${
-                 //here we check if the problem is in the user's favorites and add the 'active' class to the button if it is
-                 userProgress.favoriteProblems.includes(problem.id)
-                   ? "active"
-                   : ""
-               }"
-data-id="${problem.id}" aria-label="Favorite problem">
-        <i class="fas fa-heart"></i>
-    </button>
-               <button class="notes-btn ${
-      userProgress.problemNotes[problem.id] ? "has-notes" : ""
-    }" data-id="${problem.id}" aria-label="Problem notes">
-  <i class="fas fa-sticky-note"></i>
-</button>
+      (problem) => {
+        let isRec = false;
+        let recLabel = "";
+        
+        if (cpType === "brute-force first") {
+          if (problem.difficulty === "easy" || problem.tags.includes("Arrays")) {
+            isRec = true;
+            recLabel = "Plan First!";
+          }
+        } else if (cpType === "over-optimizer") {
+          if (problem.difficulty === "hard" || problem.tags.includes("Dynamic Programming") || problem.tags.includes("Hash Table")) {
+            isRec = true;
+            recLabel = "Optimize Metrics";
+          }
+        } else if (cpType === "slow but accurate") {
+          if (problem.difficulty === "medium") {
+            isRec = true;
+            recLabel = "Speed Practice";
+          }
+        } else if (cpType === "greedy thinker") {
+          if (problem.tags.includes("Greedy") || problem.tags.includes("Divide and Conquer") || problem.tags.includes("Recursion")) {
+            isRec = true;
+            recLabel = "Heuristic Check";
+          }
+        }
+        
+        const recBadge = isRec ? `<span class="rec-personality-badge"><i class="fas fa-brain"></i> ${recLabel}</span>` : "";
 
-
-                 <span class="difficulty-badge ${getDifficultyClass(problem.difficulty)}">${problem.difficulty}</span>
-             </div>
-            </div>
-            <div class="problem-tags">
-                ${problem.tags.map((tag) => `<span class="tag">${tag}</span>`).join("")}
-            </div>
-            <div class="problem-meta">
-                <span class="acceptance-rate">
-                    <i class="fas fa-users"></i> ${problem.acceptance} acceptance
-                </span>
-                ${
-                  userProgress.completedProblems.includes(problem.id)
-                    ? '<span class="completed-badge"><i class="fas fa-check"></i> Completed</span>'
-                    : ""
-                }
-            </div>
-        </div>
-    `,
-    )
+        return `
+          <div class="problem-card animate-in" data-id="${problem.id}">
+              <div class="problem-header">
+                <h3 class="problem-title">${recBadge}${problem.title}</h3>
+                 <div class="problem-actions">
+                 <button class="favorite-btn ${
+                   //here we check if the problem is in the user's favorites and add the 'active' class to the button if it is
+                   userProgress.favoriteProblems.includes(problem.id)
+                     ? "active"
+                     : ""
+                 }"
+  data-id="${problem.id}" aria-label="Favorite problem">
+          <i class="fas fa-heart"></i>
+      </button>
+                 <button class="notes-btn ${
+        userProgress.problemNotes[problem.id] ? "has-notes" : ""
+      }" data-id="${problem.id}" aria-label="Problem notes">
+    <i class="fas fa-sticky-note"></i>
+  </button>
+  
+  
+                   <span class="difficulty-badge ${getDifficultyClass(problem.difficulty)}">${problem.difficulty}</span>
+               </div>
+              </div>
+              <div class="problem-tags">
+                  ${problem.tags.map((tag) => `<span class="tag">${tag}</span>`).join("")}
+              </div>
+              <div class="problem-meta">
+                  <span class="acceptance-rate">
+                      <i class="fas fa-users"></i> ${problem.acceptance} acceptance
+                  </span>
+                  ${
+                    userProgress.completedProblems.includes(problem.id)
+                      ? '<span class="completed-badge"><i class="fas fa-check"></i> Completed</span>'
+                      : ""
+                  }
+              </div>
+          </div>
+      `;
+    })
     .join("");
 
   // Favorite button handlers
@@ -4201,6 +4216,21 @@ function updateDashboard() {
   updateBadges();
   updateRecentProblems(); // Recently Viewed Problems
   updateLeaderboard();
+
+  // Dynamic Coding Personality Card Injection
+  const grid = document.querySelector(".dashboard-grid");
+  if (grid && !document.getElementById("personalityCard")) {
+    const pCard = document.createElement("div");
+    pCard.className = "dashboard-card personality-card";
+    pCard.id = "personalityCard";
+    const profileCard = grid.querySelector(".profile-card");
+    if (profileCard) {
+      profileCard.after(pCard);
+    } else {
+      grid.prepend(pCard);
+    }
+  }
+  renderPersonalityCard();
 }
 
 function updateCurrentDate() {
@@ -4950,6 +4980,34 @@ function getBotResponse(question) {
     }
   }
 
+  const cpType = userProgress.codingPersonality ? userProgress.codingPersonality.type : "brute-force first";
+  let personalityHint = "";
+  if (cpType === "brute-force first") {
+    personalityHint = `
+      <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2); border-left: 3px solid #ef4444; padding: 8px 12px; border-radius: 6px; margin-top: 15px; font-size: 0.8rem; line-height: 1.4; color: #f87171;">
+        ⚠️ <strong>Behavior Tip (Brute-Force First)</strong>: Remember to write down edge checks (like empty/null inputs) before typing logic loops!
+      </div>
+    `;
+  } else if (cpType === "over-optimizer") {
+    personalityHint = `
+      <div style="background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.2); border-left: 3px solid #a855f7; padding: 8px 12px; border-radius: 6px; margin-top: 15px; font-size: 0.8rem; line-height: 1.4; color: #c084fc;">
+        ⚡ <strong>Behavior Tip (Over-Optimizer)</strong>: Focus on clean code readability and verify if the performance gain warrants complex structures.
+      </div>
+    `;
+  } else if (cpType === "slow but accurate") {
+    personalityHint = `
+      <div style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); border-left: 3px solid #3b82f6; padding: 8px 12px; border-radius: 6px; margin-top: 15px; font-size: 0.8rem; line-height: 1.4; color: #60a5fa;">
+        ⏱️ <strong>Behavior Tip (Slow but Accurate)</strong>: You write correct code! Try setting a timer for 15 minutes to practice coding under pressure.
+      </div>
+    `;
+  } else if (cpType === "greedy thinker") {
+    personalityHint = `
+      <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); border-left: 3px solid #10b981; padding: 8px 12px; border-radius: 6px; margin-top: 15px; font-size: 0.8rem; line-height: 1.4; color: #34d399;">
+        🎯 <strong>Behavior Tip (Greedy Thinker)</strong>: Ensure a greedy choice guarantees a global optimum before finalizing your algorithm.
+      </div>
+    `;
+  }
+
   return `
     <div class="assistant-response">
       <h4>🧠 Problem Understanding</h4>
@@ -4969,6 +5027,8 @@ function solveProblem() {
       <h4>📊 Complexity Analysis</h4>
       <p>Time Complexity: O(n)</p>
       <p>Space Complexity: O(1)</p>
+      
+      ${personalityHint}
     </div>
   `;
 }
@@ -5150,42 +5210,35 @@ async function getAuthenticatedSession() {
 }
 
 function loadUserData() {
-
     try {
-
         const saved = localStorage.getItem("algoInfinityVerse");
-
         if (saved) {
-
             const data = JSON.parse(saved);
-
             userProgress = {
                 ...userProgress,
                 ...data
             };
-
-
             if (!userProgress.quizScores) {
                 userProgress.quizScores = {};
             }
-
-
             if (!userProgress.completedRoadmapSteps) {
                 userProgress.completedRoadmapSteps = [];
             }
-
-
             if (!userProgress.activityData) {
                 userProgress.activityData = {};
             }
-
-
+            // Ensure codingPersonality exists
+            if (!userProgress.codingPersonality) {
+                userProgress.codingPersonality = {
+                    type: "brute-force first",
+                    bruteForceCount: 1,
+                    slowAccurateCount: 0,
+                    greedyCount: 0,
+                    overOptimizerCount: 0
+                };
+            }
             backfillActivityData();
-
-
         } else {
-
-
             userProgress.name = "Learner";
             userProgress.avatar = "🚀";
             userProgress.completedProblems = [1,2,10];
@@ -5195,23 +5248,18 @@ function loadUserData() {
             userProgress.badges = [1];
             userProgress.quizScores = {};
             userProgress.activityData = {};
-
+            userProgress.codingPersonality = {
+                type: "brute-force first",
+                bruteForceCount: 1,
+                slowAccurateCount: 0,
+                greedyCount: 0,
+                overOptimizerCount: 0
+            };
             saveUserData();
-
         }
-
-
     } catch(error) {
-
-
-        console.error(
-            "Error loading user data:",
-            error
-        );
-
-
+        console.error("Error loading user data:", error);
         userProgress = {
-
             name:"Learner",
             avatar:"🚀",
             completedProblems:[],
@@ -5221,42 +5269,33 @@ function loadUserData() {
             badges:[],
             lastActive:null,
             quizScores:{},
-            activityData:{}
-
+            activityData:{},
+            codingPersonality: {
+                type: "brute-force first",
+                bruteForceCount: 1,
+                slowAccurateCount: 0,
+                greedyCount: 0,
+                overOptimizerCount: 0
+            }
         };
-
-
         saveUserData();
-
     }
-
 
     updateProfile();
 
-
     getAuthenticatedSession()
     .then(session=>{
-
         if(
           session &&
           session.user &&
           session.user.name
         ){
-
-            userProgress.name =
-            session.user.name;
-
+            userProgress.name = session.user.name;
             updateProfile();
-
             saveUserData();
-
         }
-
-
         initProfile();
-
     });
-
 }
 
 // ===== QUIZ EDITOR =====
@@ -6851,3 +6890,250 @@ function resetGame() {
   };
 }
 
+// ===== CODING PERSONALITY QUIZ & RENDERING =====
+const QUIZ_QUESTIONS = [
+  {
+    q: "When starting a new coding problem, what do you do first?",
+    options: [
+      { text: "Start typing the code immediately to see if it works.", type: "brute-force first" },
+      { text: "Analyze constraints, define edge cases, and write pseudocode.", type: "slow but accurate" },
+      { text: "Design a fast greedy heuristic to get a quick correct result.", type: "greedy thinker" },
+      { text: "Search for hash tables or auxiliary space shortcuts to minimize complexity.", type: "over-optimizer" }
+    ]
+  },
+  {
+    q: "How do you evaluate time/space complexity?",
+    options: [
+      { text: "I don't think about it until it gets a Time Limit Exceeded (TLE) error.", type: "brute-force first" },
+      { text: "I trace the iterations and count nested variables step-by-step.", type: "slow but accurate" },
+      { text: "I trust locally optimal choices to run fast enough.", type: "greedy thinker" },
+      { text: "I always structure for O(N) or O(1) space, even if it requires complex code.", type: "over-optimizer" }
+    ]
+  },
+  {
+    q: "Your solution fails on an empty input. What is your reaction?",
+    options: [
+      { text: "I patch it with a quick 'if empty return' condition.", type: "brute-force first" },
+      { text: "I dry-run the loop bounds on paper to understand why it cracked.", type: "slow but accurate" },
+      { text: "I use simple helper fallback returns.", type: "greedy thinker" },
+      { text: "I rewrite the index math to prevent empty pointer states altogether.", type: "over-optimizer" }
+    ]
+  },
+  {
+    q: "What is your main goal when coding?",
+    options: [
+      { text: "Get green checkmarks as fast as possible.", type: "brute-force first" },
+      { text: "Write bug-free, clean, and highly readable code.", type: "slow but accurate" },
+      { text: "Find the simplest, most intuitive logical shortcut.", type: "greedy thinker" },
+      { text: "Optimize space-time metrics to beat 100% of submissions.", type: "over-optimizer" }
+    ]
+  }
+];
+
+let currentQuizIndex = 0;
+let quizSelections = [];
+
+function openPersonalityQuiz() {
+  let modal = document.getElementById("personalityQuizModal");
+  if (!modal) {
+    modal = document.createElement("div");
+    modal.className = "modal";
+    modal.id = "personalityQuizModal";
+    modal.innerHTML = `
+      <div class="modal-content personality-quiz-modal-content">
+        <div class="modal-header">
+          <h3>Coding Personality Profiler</h3>
+          <button class="modal-close" id="personalityQuizClose">&times;</button>
+        </div>
+        <div class="modal-body" id="personalityQuizBody">
+          <!-- Quiz steps render here -->
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    document.getElementById("personalityQuizClose").addEventListener("click", () => {
+      modal.classList.remove("active");
+    });
+  }
+
+  currentQuizIndex = 0;
+  quizSelections = [];
+  modal.classList.add("active");
+  renderPersonalityQuizQuestion();
+}
+
+function renderPersonalityQuizQuestion() {
+  const container = document.getElementById("personalityQuizBody");
+  if (!container) return;
+
+  if (currentQuizIndex >= QUIZ_QUESTIONS.length) {
+    finishPersonalityQuiz();
+    return;
+  }
+
+  const quest = QUIZ_QUESTIONS[currentQuizIndex];
+  container.innerHTML = `
+    <div class="quiz-question-container">
+      <div class="quiz-question-header">
+        <span>Question ${currentQuizIndex + 1} of ${QUIZ_QUESTIONS.length}</span>
+        <span>Coding Style Quiz</span>
+      </div>
+      <p class="quiz-question-text">${quest.q}</p>
+      <div class="quiz-answer-options">
+        ${quest.options.map((opt, i) => `
+          <div class="quiz-answer-option" data-type="${opt.type}">
+            <div class="quiz-answer-letter">${String.fromCharCode(65 + i)}</div>
+            <div class="quiz-answer-text">${opt.text}</div>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  `;
+
+  // Attach option event listeners
+  container.querySelectorAll(".quiz-answer-option").forEach(item => {
+    item.addEventListener("click", () => {
+      item.classList.add("selected");
+      const type = item.dataset.type;
+      quizSelections.push(type);
+
+      setTimeout(() => {
+        currentQuizIndex++;
+        renderPersonalityQuizQuestion();
+      }, 300);
+    });
+  });
+}
+
+function finishPersonalityQuiz() {
+  const counts = {
+    "brute-force first": 0,
+    "over-optimizer": 0,
+    "slow but accurate": 0,
+    "greedy thinker": 0
+  };
+
+  quizSelections.forEach(type => {
+    counts[type] = (counts[type] || 0) + 1;
+  });
+
+  // Find dominant type
+  let dominantType = "brute-force first";
+  let maxCount = -1;
+  for (const type in counts) {
+    if (counts[type] > maxCount) {
+      maxCount = counts[type];
+      dominantType = type;
+    }
+  }
+
+  // Update counts in userProgress
+  if (!userProgress.codingPersonality) {
+    userProgress.codingPersonality = {};
+  }
+  userProgress.codingPersonality.type = dominantType;
+  userProgress.codingPersonality.bruteForceCount = counts["brute-force first"] + 1;
+  userProgress.codingPersonality.overOptimizerCount = counts["over-optimizer"] + 1;
+  userProgress.codingPersonality.slowAccurateCount = counts["slow but accurate"] + 1;
+  userProgress.codingPersonality.greedyCount = counts["greedy thinker"] + 1;
+
+  saveUserData();
+  renderPersonalityCard();
+  
+  // Also re-render problems so that recommended badges update dynamically!
+  if (typeof renderProblems === "function") {
+    const searchInput = document.getElementById("searchInput");
+    const filterActive = document.querySelector(".filter-btn.active");
+    const activeFilter = filterActive ? filterActive.dataset.filter : "all";
+    renderProblems(activeFilter, searchInput ? searchInput.value.toLowerCase() : "");
+  }
+
+  const modal = document.getElementById("personalityQuizModal");
+  if (modal) modal.classList.remove("active");
+
+  showNotification(`Quiz complete! Your coding personality is: ${dominantType.replace("-", " ").toUpperCase()} 🧠`, "success");
+}
+
+function renderPersonalityCard() {
+  const pCard = document.getElementById("personalityCard");
+  if (!pCard) return;
+
+  const cp = userProgress.codingPersonality || {
+    type: "brute-force first",
+    bruteForceCount: 1,
+    slowAccurateCount: 0,
+    greedyCount: 0,
+    overOptimizerCount: 0
+  };
+
+  const total = (cp.bruteForceCount || 0) + (cp.slowAccurateCount || 0) + (cp.greedyCount || 0) + (cp.overOptimizerCount || 0) || 1;
+  const pctBrute = Math.round(((cp.bruteForceCount || 0) / total) * 100);
+  const pctOpt = Math.round(((cp.overOptimizerCount || 0) / total) * 100);
+  const pctSlow = Math.round(((cp.slowAccurateCount || 0) / total) * 100);
+  const pctGreedy = Math.round(((cp.greedyCount || 0) / total) * 100);
+
+  let icon = "🔎";
+  let desc = "";
+  let adaptation = "";
+
+  if (cp.type === "brute-force first") {
+    icon = "🔴";
+    desc = "You jump straight into writing code! You get solutions quickly, but can overlook edge cases or time/space complexities.";
+    adaptation = "Focus: Easy/Medium problems with boundary checks";
+  } else if (cp.type === "over-optimizer") {
+    icon = "🟣";
+    desc = "You love optimal space/time tricks! You always reach for hashes and pointers, sometimes over-complicating simpler tasks.";
+    adaptation = "Focus: Medium/Hard problems, clean code style";
+  } else if (cp.type === "slow but accurate") {
+    icon = "🔵";
+    desc = "You take your time to design solutions. You have low error rates but could practice coding faster under time limits.";
+    adaptation = "Focus: Medium problems, speed practice";
+  } else if (cp.type === "greedy thinker") {
+    icon = "🟢";
+    desc = "You look for immediate local optimizations. You are great at heuristics, but watch out for cases where DP is required.";
+    adaptation = "Focus: Greedy & Dynamic Programming concepts";
+  }
+
+  pCard.innerHTML = `
+    <h3>🧠 Coding Personality</h3>
+    <div class="personality-profile-content">
+      <div class="personality-header-info">
+        <div class="personality-badge-icon">${icon}</div>
+        <div class="personality-type-group">
+          <h4 style="text-transform: capitalize;">${cp.type.replace("-", " ")}</h4>
+          <span class="adaptation-badge">${adaptation}</span>
+        </div>
+      </div>
+      <p class="personality-description">${desc}</p>
+      
+      <div class="style-progress-bars">
+        <div class="style-bar-group">
+          <span class="style-label">Brute-Force First (${pctBrute}%)</span>
+          <div class="style-bar-track"><div class="style-bar-fill" id="barBrute" style="width: ${pctBrute}%;"></div></div>
+        </div>
+        <div class="style-bar-group">
+          <span class="style-label">Over-Optimizer (${pctOpt}%)</span>
+          <div class="style-bar-track"><div class="style-bar-fill" id="barOpt" style="width: ${pctOpt}%;"></div></div>
+        </div>
+        <div class="style-bar-group">
+          <span class="style-label">Slow but Accurate (${pctSlow}%)</span>
+          <div class="style-bar-track"><div class="style-bar-fill" id="barSlow" style="width: ${pctSlow}%;"></div></div>
+        </div>
+        <div class="style-bar-group">
+          <span class="style-label">Greedy Thinker (${pctGreedy}%)</span>
+          <div class="style-bar-track"><div class="style-bar-fill" id="barGreedy" style="width: ${pctGreedy}%;"></div></div>
+        </div>
+      </div>
+      
+      <div class="personality-actions">
+        <button class="btn btn-secondary btn-mini" id="personalityQuizBtn">
+          <i class="fas fa-redo"></i> Retake Profiler Quiz
+        </button>
+      </div>
+    </div>
+  `;
+
+  // Attach event listener to the quiz button
+  document.getElementById("personalityQuizBtn").addEventListener("click", openPersonalityQuiz);
+}
