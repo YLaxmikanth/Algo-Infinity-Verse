@@ -180,7 +180,41 @@ async function executePython(code) {
 function initPythonEditor() {
   const editor = document.getElementById("pyEditor");
   if (!editor) return;
-  const outputBody    = document.getElementById("pyOutputBody");
+
+  const intentBanner = document.getElementById("intentHintBanner");
+  const intentBannerText = intentBanner?.querySelector(".intent-hint-text");
+  const intentBannerDismiss = intentBanner?.querySelector(".intent-hint-dismiss");
+
+  const INTENT_HINTS = {
+    stuck: '<i class="fas fa-life-ring"></i> Stuck on the same error? Try re-reading the error message line by line, or check the example dropdown for a working reference.',
+    guessing: '<i class="fas fa-lightbulb"></i> Running the same code repeatedly without changes? Take a moment to plan your next edit before running again.',
+    overthinking: '<i class="fas fa-feather"></i> You\'ve been editing for a while without running. Try running your current code to check progress.',
+    confident: '<i class="fas fa-check-circle"></i> Nice, that ran successfully! Try the next example or extend your code further.',
+  };
+
+  let intentDismissed = false;
+
+  const intentDetector = (typeof createIntentDetector === "function")
+    ? createIntentDetector({
+        onStateChange: (state) => {
+          if (!intentBanner || !intentBannerText) return;
+          if (state === "neutral" || !INTENT_HINTS[state]) {
+            intentBanner.classList.add("hidden");
+            return;
+          }
+          if (intentDismissed) return; // Respect user's dismiss action
+          intentBannerText.innerHTML = INTENT_HINTS[state];
+          intentBanner.className = `intent-hint-banner intent-${state}`;
+        },
+      })
+    : null;
+
+  if (intentBannerDismiss) {
+    intentBannerDismiss.addEventListener("click", () => {
+      intentDismissed = true;
+      intentBanner.classList.add("hidden");
+    });
+  }  const outputBody    = document.getElementById("pyOutputBody");
   const consoleBody   = document.getElementById("pyConsoleBody");
   const runBtn        = document.getElementById("pyRunBtn");
   const resetBtn      = document.getElementById("pyResetBtn");
@@ -223,7 +257,10 @@ function initPythonEditor() {
     setTimeout(() => { saveBtn.innerHTML = '<i class="fas fa-save"></i>'; }, 2000);
   });
 
-  editor.addEventListener("input", updateLines);
+  editor.addEventListener("input", () => {
+    updateLines();
+    if (intentDetector) intentDetector.recordEdit(editor.value);
+  });
   editor.addEventListener("scroll", () => { lineNumbers.scrollTop = editor.scrollTop; });
 
   editor.addEventListener("keydown", (e) => {
@@ -269,6 +306,10 @@ function initPythonEditor() {
       setStatus("error");
     } else {
       setStatus("ready");
+    }
+
+    if (intentDetector) {
+      intentDetector.recordRun({ hasError: errors.length > 0, code: editor.value });
     }
   }
 
