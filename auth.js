@@ -369,6 +369,7 @@
       wireLogout();
       wireAuthForm();
       wireDeactivateAccount();
+      wireDeleteAccount();
       updateProfileNames(currentSession.user);
       guardPrivateHash();
 
@@ -389,6 +390,7 @@
     wireLogout();
     wireAuthForm();
     wireDeactivateAccount();
+    wireDeleteAccount();
     updateProfileNames(currentSession.user);
 
     window.addEventListener("hashchange", guardPrivateHash);
@@ -424,6 +426,68 @@ function wireDeactivateAccount() {
       if (!response.ok) {
         throw new Error(
           data.error ||
+          "Failed to deactivate account."
+        );
+      }
+
+      alert("Account deactivated successfully.");
+
+      window.location.href = "/login";
+    } catch (error) {
+      alert(error.message);
+    }
+  });
+}
+
+function wireDeleteAccount() {
+  const btn = document.getElementById(
+    "deleteAccountBtn"
+  );
+
+  if (!btn) return;
+
+  btn.addEventListener("click", async () => {
+    const confirmed = confirm(
+      "This action is permanent. Delete account?"
+      "Are you sure you want to deactivate your account?"
+    );
+
+    if (!confirmed) return;
+
+    const password = prompt(
+      "Enter your password to continue:"
+    );
+
+    if (!password) return;
+
+    try {
+      const response = await fetch(
+        "/api/delete-account",
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            password,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error ||
+            "Failed to delete account."
+        );
+      }
+
+      alert(
+        "Account deleted successfully."
+      );
           "Failed to deactivate account."
         );
       }
