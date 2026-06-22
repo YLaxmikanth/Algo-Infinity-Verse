@@ -9,6 +9,7 @@ import { extractResumeText } from "./backend/resume-analyzer/parser.js";
 import { calculateATS } from "./backend/resume-analyzer/atsScore.js";
 import { findMissingSkills } from "./backend/resume-analyzer/skills.js";
 import { getSuggestions } from "./backend/resume-analyzer/suggestions.js";
+import { handleReportRequest } from "./backend/reports/reportGenerator.js";
 import { Server as SocketIOServer } from "socket.io";
 
 const upload = multer({ storage: multer.memoryStorage() }).single("resume");
@@ -1323,6 +1324,12 @@ if (
       console.error("Failed to fetch quiz results:", error);
       return sendJson(res, 500, { error: "Failed to fetch quiz results." });
     }
+  }
+
+  if (pathname === "/api/reports/export/pdf" || pathname === "/api/reports/export/image") {
+    const session = getSession(req);
+    if (!session) return sendJson(res, 401, { error: "Authentication required." });
+    return await handleReportRequest(req, res, pathname, session);
   }
 
   return sendJson(res, 404, { error: "Not found." });
