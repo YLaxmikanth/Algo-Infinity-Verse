@@ -324,47 +324,34 @@ function injectRevisionSchedulerUI(topicId) {
 // ============================================
 let currentProblem = null;
 
-// ============================================
-// INITIALIZATION
-// ============================================
+// ==========================================
+// 1. SINGLE CENTRALIZED INITIALIZATION
+// ==========================================
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('DOMContentLoaded fired, initializing app...');
-  loadUserData();
-  initLoadingScreen();
-  initNavbar();
-  initHeroSection();
-  initTopicsSection();
-  initQuizSection();
-  initPracticeSection();
-  initRoadmap();
-  initDashboard();
-  initGamification();
-  initChatbot();
-  initProfile();
-  initScrollEffects();
-  initDarkMode();
-  console.log('App initialization complete');
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-  loadUserData();
-  initLoadingScreen();
-  initNavbar();
-  initHeroSection();
-  initTopicOfTheDay();
-  initTopicsSection();
-  initQuizSection();
-  initPracticeSection();
-  initRoadmap();
-  initDashboard();
-  initGamification();
-  initDailyChallenge();
-  initChatbot();
-  initProfile();
-  initNewsletterValidation();
-  initScrollEffects();
-  initFooterCurrentDate();
-  updateProfile();
+    console.log('Algo Infinity Verse: Initializing App...');
+    
+    // Core Initializations - Executed strictly ONCE in order
+    loadUserData();
+    initLoadingScreen();
+    initNavbar();
+    initHeroSection();
+    initTopicOfTheDay();
+    initTopicsSection();
+    initQuizSection();
+    initPracticeSection();
+    initRoadmap();
+    initDashboard();
+    initGamification();
+    initDailyChallenge();
+    initChatbot();
+    initProfile();
+    initNewsletterValidation();
+    initScrollEffects();
+    initDarkMode();
+    initFooterCurrentDate();
+    updateProfile();
+    
+    console.log('App initialization complete');
 });
 
 // ============================================
@@ -380,6 +367,28 @@ function initLoadingScreen() {
 // ============================================
 // NAVBAR
 // ============================================
+let scrollPosition = 0;
+
+function lockBodyScroll() {
+  scrollPosition = window.scrollY;
+
+  document.body.style.position = "fixed";
+  document.body.style.top = `-${scrollPosition}px`;
+  document.body.style.left = "0";
+  document.body.style.right = "0";
+  document.body.style.width = "100%";
+}
+
+function unlockBodyScroll() {
+  document.body.style.position = "";
+  document.body.style.top = "";
+  document.body.style.left = "";
+  document.body.style.right = "";
+  document.body.style.width = "";
+
+  window.scrollTo(0, scrollPosition);
+}
+
 let navbarInitialized = false;
 
 function initNavbar() {
@@ -394,7 +403,11 @@ function initNavbar() {
     navLinks.classList.toggle("active", isOpen);
     menuToggle.setAttribute("aria-expanded", isOpen);
     if (overlay) overlay.classList.toggle("active", isOpen);
-    document.body.style.overflow = isOpen ? "hidden" : "";
+    if (isOpen) {
+      lockBodyScroll();
+    } else {
+      unlockBodyScroll();
+    }
     const icon = menuToggle.querySelector("i");
     if (icon) { icon.classList.toggle("fa-bars", !isOpen); icon.classList.toggle("fa-times", isOpen); }
   };

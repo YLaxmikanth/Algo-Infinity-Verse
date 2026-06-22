@@ -100,13 +100,13 @@ async function runTests() {
 
     console.log("\n=== Testing Edge Cases ===");
 
-    console.log("Edge Case 1: Upload CSV with no valid GitHub URLs");
-    fs.writeFileSync("test_invalid.csv", "https://gitlab.com/user/repo\nhttps://bitbucket.org/some/repo");
+    console.log("Edge Case 1: Upload CSV with no supported repository URLs");
+    fs.writeFileSync("test_invalid.csv", "https://example.com/user/repo\nnot-a-url");
     const formInvalid = new FormData();
     formInvalid.append('csv', fs.createReadStream("test_invalid.csv"));
     const resInvalid = await request("/api/audit/bulk", "POST", formInvalid, formInvalid.getHeaders());
     if (resInvalid.status !== 400) throw new Error(`Expected 400, got ${resInvalid.status}`);
-    console.log("✓ Edge Case 1 passed: Rejected CSV lacking GitHub URLs.");
+    console.log("✓ Edge Case 1 passed: Rejected CSV lacking supported VCS URLs.");
 
     console.log("Edge Case 2: Polling an invalid/non-existent batch ID");
     const resPollInvalid = await request("/api/audit/bulk/this-id-does-not-exist", "GET");

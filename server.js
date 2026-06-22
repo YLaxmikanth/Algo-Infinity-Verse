@@ -10,6 +10,7 @@ import { calculateATS } from "./backend/resume-analyzer/atsScore.js";
 import { findMissingSkills } from "./backend/resume-analyzer/skills.js";
 import { getSuggestions } from "./backend/resume-analyzer/suggestions.js";
 import { fetchWorkflows, analyzeWorkflow } from "./backend/repository-analyzer/cicdValidator.js";
+import { VCSFactory } from "./backend/vcs/VCSFactory.js";
 import { enqueueBulkAudit, getBatchProgress } from "./backend/jobs/queue.js";
 import "./backend/jobs/worker.js"; // Initialize worker
 import { parse as csvParse } from "csv-parse/sync";
@@ -352,7 +353,8 @@ async function handleApi(req, res, pathname) {
         return sendJson(res, 400, { error: "Please provide a valid GitHub repository URL." });
       }
 
-      const workflows = await fetchWorkflows(repoUrl);
+      const provider = VCSFactory.getProvider(repoUrl);
+      const workflows = await provider.getNormalizedWorkflows();
       
       if (workflows.length === 0) {
         return sendJson(res, 200, {
@@ -396,7 +398,7 @@ async function handleApi(req, res, pathname) {
     }
   }
 
-// Bulk Audit APIs
+  // Bulk Audit APIs
   if (pathname === "/api/audit/bulk" && req.method === "POST") {
     try {
       uploadCsv(req, res, async (err) => {
