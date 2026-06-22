@@ -50,13 +50,15 @@ export async function enqueueBulkAudit(batchId, repoUrls) {
     console.warn("Redis connection failed. Falling back to in-memory processing for simulation.");
     // Simulate background processing for testing environments without Redis
     setTimeout(async () => {
-      const { fetchWorkflows, analyzeWorkflow } = await import('../repository-analyzer/cicdValidator.js');
+      const { analyzeWorkflow } = await import('../repository-analyzer/cicdValidator.js');
+      const { VCSFactory } = await import('../vcs/VCSFactory.js');
       for (const url of repoUrls) {
         try {
-          const workflows = await fetchWorkflows(url);
+          const provider = VCSFactory.getProvider(url);
+          const workflows = await provider.getNormalizedWorkflows();
           let bestScore = 0;
           for (const wf of workflows) {
-            const result = analyzeWorkflow(wf.content);
+            const result = analyzeWorkflow(wf.commands);
             if (result.score > bestScore) bestScore = result.score;
           }
           const batch = batchStore.get(batchId);
@@ -95,3 +97,5 @@ export function getBatchProgress(batchId) {
     progress
   };
 }
+
+

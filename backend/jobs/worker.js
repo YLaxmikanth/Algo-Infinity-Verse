@@ -1,6 +1,7 @@
 import { Worker } from 'bullmq';
 import IORedis from 'ioredis';
-import { fetchWorkflows, analyzeWorkflow } from '../repository-analyzer/cicdValidator.js';
+import { analyzeWorkflow } from '../repository-analyzer/cicdValidator.js';
+import { VCSFactory } from '../vcs/VCSFactory.js';
 import { batchStore } from './queue.js';
 
 // Use same Redis connection configuration
@@ -22,13 +23,14 @@ export const auditWorker = new Worker('bulk-audit-queue', async (job) => {
 
   try {
     // 1. Fetch workflows from GitHub
-    const workflows = await fetchWorkflows(repoUrl);
+    const provider = VCSFactory.getProvider(repoUrl);
+    const workflows = await provider.getNormalizedWorkflows();
     
     // 2. Analyze workflows
     let bestScore = 0;
     if (workflows.length > 0) {
       for (const wf of workflows) {
-        const result = analyzeWorkflow(wf.content);
+        const result = analyzeWorkflow(wf.commands);
         if (result.score > bestScore) bestScore = result.score;
       }
     }
@@ -64,3 +66,5 @@ auditWorker.on('failed', (job, err) => {
 });
 
 console.log('Background Audit Worker started and listening for jobs...');
+
+

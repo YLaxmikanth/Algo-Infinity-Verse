@@ -9,7 +9,7 @@ import { extractResumeText } from "./backend/resume-analyzer/parser.js";
 import { calculateATS } from "./backend/resume-analyzer/atsScore.js";
 import { findMissingSkills } from "./backend/resume-analyzer/skills.js";
 import { getSuggestions } from "./backend/resume-analyzer/suggestions.js";
-import { fetchWorkflows, analyzeWorkflow } from "./backend/repository-analyzer/cicdValidator.js";
+import { analyzeWorkflow } from "./backend/repository-analyzer/cicdValidator.js";
 import { VCSFactory } from "./backend/vcs/VCSFactory.js";
 import { enqueueBulkAudit, getBatchProgress } from "./backend/jobs/queue.js";
 import "./backend/jobs/worker.js"; // Initialize worker
@@ -370,7 +370,7 @@ async function handleApi(req, res, pathname) {
       let overallTests = false;
 
       for (const wf of workflows) {
-        const result = analyzeWorkflow(wf.content);
+        const result = analyzeWorkflow(wf.commands);
         if (result.score > bestScore) bestScore = result.score;
         if (result.hasDependencies) overallDeps = true;
         if (result.hasTests) overallTests = true;
@@ -1464,3 +1464,4 @@ if (process.env.VERCEL !== "1") {
       process.exit(1);
     });
 }
+
