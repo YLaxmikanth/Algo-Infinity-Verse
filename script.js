@@ -380,6 +380,28 @@ function initLoadingScreen() {
 // ============================================
 // NAVBAR
 // ============================================
+let scrollPosition = 0;
+
+function lockBodyScroll() {
+  scrollPosition = window.scrollY;
+
+  document.body.style.position = "fixed";
+  document.body.style.top = `-${scrollPosition}px`;
+  document.body.style.left = "0";
+  document.body.style.right = "0";
+  document.body.style.width = "100%";
+}
+
+function unlockBodyScroll() {
+  document.body.style.position = "";
+  document.body.style.top = "";
+  document.body.style.left = "";
+  document.body.style.right = "";
+  document.body.style.width = "";
+
+  window.scrollTo(0, scrollPosition);
+}
+
 let navbarInitialized = false;
 
 function initNavbar() {
@@ -394,7 +416,11 @@ function initNavbar() {
     navLinks.classList.toggle("active", isOpen);
     menuToggle.setAttribute("aria-expanded", isOpen);
     if (overlay) overlay.classList.toggle("active", isOpen);
-    document.body.style.overflow = isOpen ? "hidden" : "";
+    if (isOpen) {
+      lockBodyScroll();
+    } else {
+      unlockBodyScroll();
+    }
     const icon = menuToggle.querySelector("i");
     if (icon) { icon.classList.toggle("fa-bars", !isOpen); icon.classList.toggle("fa-times", isOpen); }
   };
