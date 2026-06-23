@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>B-Tree Visualizer | Algo Infinity Verse</title>
+    <meta name="description" content="Interactive B-Tree visualizer with insert, search, step, and play controls." />
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="b-tree-visualizer.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  </head>
+  <body data-page="b-tree-visualizer">
+    <div id="navbar-placeholder"></div>
+
+    <section id="home" class="hero visualizer-hero">
+      <div class="hero-background">
+        <div class="stars"></div>
+        <div class="stars2"></div>
+        <div class="stars3"></div>
+      </div>
+      <div class="hero-content">
+        <h1 class="hero-title">
+          <span class="title-line">Interactive</span>
+          <span class="main-title gradient-text">B-Tree Visualizer</span>
+        </h1>
+        <div class="typing-container">
+          <span class="typing-text_visualizer" id="typingTextVisualizer"></span>
+          <span class="typing-cursor">|</span>
+        </div>
+      </div>
+      <div class="scroll-indicator">
+        <i class="fas fa-chevron-down"></i>
+      </div>
+    </section>
+
+    <section class="visualizer-section">
+      <div class="visualizer-container">
+        <aside class="control-panel">
+          <h2 class="panel-title"><i class="fas fa-sliders-h"></i> Operations</h2>
+
+          <div class="control-group">
+            <label>B-Tree Degree</label>
+            <input type="number" id="degree" value="3" min="2" max="6">
+          </div>
+          <div class="control-group">
+            <label>Key</label>
+            <input type="number" id="node-value" placeholder="e.g. 25">
+          </div>
+          <div class="button-grid">
+            <button class="btn-vis btn-insert" id="btn-insert">Insert</button>
+            <button class="btn-vis btn-search" id="btn-search">Search</button>
+            <button class="btn-vis" id="btn-step">Step</button>
+            <button class="btn-vis" id="btn-play">Play</button>
+          </div>
+          <div class="control-group">
+            <button class="btn-vis btn-danger" id="btn-reset">Reset</button>
+          </div>
+
+          <div class="status-box" id="status-message">
+            Ready. Enter a key to insert or search.
+          </div>
+          <div class="status-box" id="step-counter">
+            Step 0 / 0
+          </div>
+        </aside>
+
+        <main class="canvas-area">
+          <div id="tree-canvas" class="tree-canvas">
+            <div id="node-layer" class="node-layer"></div>
+            <svg id="edges-svg" width="100%" height="100%"></svg>
+          </div>
+        </main>
+      </div>
+    </section>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="/script.js"></script>
+    <script src="/auth.js"></script>
+    <script src="/theme.js"></script>
+    <script src="b-tree-visualizer.js"></script>
+    <script>
+      loadPartial('navbar-placeholder', '/partials/navbar.html');
+      loadPartial('footer-placeholder', '/partials/footer.html');
+    </script>
+  </body>
+</html>

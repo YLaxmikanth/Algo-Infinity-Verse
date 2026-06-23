@@ -1,4 +1,4 @@
-// ============================================
+﻿// ============================================
 // PARTIAL LOADER
 // ============================================
 function getPartialsBase() {
@@ -351,7 +351,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initProfile();
     initNewsletterValidation();
     initScrollEffects();
-    initDarkMode();
+    if (typeof initDarkMode === "function") initDarkMode();
     initFooterCurrentDate();
     updateProfile();
     initPerlEditor();
