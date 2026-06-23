@@ -110,11 +110,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const tagsHtml = problem.tags ? problem.tags.slice(0, 3).map(tag => `<span class="tag" style="font-size: 0.75rem; padding: 0.2rem 0.5rem; background: rgba(255,255,255,0.1); border-radius: 10px; margin-right: 0.5rem;">${tag}</span>`).join('') : '';
 
             card.innerHTML = `
-                <div class="problem-header">
-                    <h3 class="problem-title">${problem.title}</h3>
-                    <span class="difficulty-badge ${problem.difficulty.toLowerCase()}">${problem.difficulty}</span>
+                <div class="problem-header" style="display: flex; justify-content: space-between; align-items: start;">
+                    <div>
+                        <h3 class="problem-title">${problem.title}</h3>
+                        <span class="difficulty-badge ${problem.difficulty.toLowerCase()}">${problem.difficulty}</span>
+                    </div>
+                    <button class="export-md-btn" title="Export as Markdown" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem; transition: color 0.2s;">
+                        <i class="fas fa-file-download"></i>
+                    </button>
                 </div>
-                <div class="problem-tags" style="margin-bottom: 1rem;">
+                <div class="problem-tags" style="margin-bottom: 1rem; margin-top: 0.5rem;">
                     ${tagsHtml}
                 </div>
                 <div class="problem-meta">
@@ -125,7 +130,18 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Add click listener to go to problem
             card.style.cursor = 'pointer';
-            card.addEventListener('click', () => {
+            card.addEventListener('click', (e) => {
+                // Ignore clicks on the export button
+                if (e.target.closest('.export-md-btn')) {
+                    const solution = userProgress.submittedSolutions ? userProgress.submittedSolutions[problem.id] : null;
+                    if (typeof exportProblemAsMarkdown === 'function') {
+                        exportProblemAsMarkdown(problem, solution);
+                    } else {
+                        console.error("Export utility not found.");
+                    }
+                    return;
+                }
+
                 if (typeof openQuizEditor === 'function') {
                     // We need to trigger the editor, maybe navigate to main page with a hash
                     window.location.href = `../../index.html?problem=${problem.id}#practice`;

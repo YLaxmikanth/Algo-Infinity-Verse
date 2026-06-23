@@ -2121,6 +2121,13 @@ function submitQuizCode() {
   if (!code.trim()) { showNotification("Please write some code before submitting!", "error"); return; }
   if (!currentProblem) { showNotification("No problem selected!", "error"); return; }
   if (userProgress.completedProblems.includes(currentProblem.id)) { showNotification("Already completed!", "info"); return; }
+  if (!userProgress.submittedSolutions) userProgress.submittedSolutions = {};
+  const langSelect = document.getElementById("languageSelect");
+  userProgress.submittedSolutions[currentProblem.id] = {
+    code: code,
+    lang: langSelect ? langSelect.value : 'javascript',
+    date: new Date().toISOString()
+  };
   userProgress.completedProblems.push(currentProblem.id);
   const difficulty = currentProblem.difficulty;
   addXP(getXPForDifficulty(difficulty));
