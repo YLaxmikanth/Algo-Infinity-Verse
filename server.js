@@ -496,6 +496,13 @@ async function handleApi(req, res, pathname) {
   }
 
   if (pathname === "/api/signup" && req.method === "POST") {
+    // In serverless environments without Firestore, file-based storage won't work
+    if (!useFirestore) {
+      return sendJson(res, 503, {
+        error: "User accounts require Firebase Firestore in serverless mode. Please configure FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY environment variables."
+      });
+    }
+
     // ── Rate limit check ─────────────────────────────────────────────────────
     const clientId = getClientIdentifier(req);
 
@@ -542,9 +549,14 @@ async function handleApi(req, res, pathname) {
       password: hashPassword(String(payload.password)),
       createdAt: new Date().toISOString(),
       isDeactivated: false,
-  deactivatedAt: null,
+      deactivatedAt: null,
     };
-    await createUser(user);
+    try {
+      await createUser(user);
+    } catch (createError) {
+      console.error("Signup user creation failed:", createError);
+      return sendJson(res, 500, { error: "Failed to create user account." });
+    }
 
     const token = createSessionToken(user);
     return sendJson(
@@ -556,6 +568,13 @@ async function handleApi(req, res, pathname) {
   }
 
   if (pathname === "/api/login" && req.method === "POST") {
+    // In serverless environments without Firestore, file-based storage won't work
+    if (!useFirestore) {
+      return sendJson(res, 503, {
+        error: "User accounts require Firebase Firestore in serverless mode. Please configure FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY environment variables."
+      });
+    }
+
     const payload = await readJsonBody(req);
     const email = String(payload.email || "")
       .trim()
@@ -591,6 +610,12 @@ async function handleApi(req, res, pathname) {
   }
 
   if (pathname === "/api/auth/google" && req.method === "POST") {
+    // Check if Firebase Admin is configured - required for Google OAuth
+    const projectId = process.env.FIREBASE_PROJECT_ID;
+    if (!projectId) {
+      return sendJson(res, 500, { error: "Firebase is not configured for authentication. Set FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY environment variables." });
+    }
+
     try {
       const body = await readJsonBody(req);
       const { idToken } = body;
@@ -630,27 +655,26 @@ async function handleApi(req, res, pathname) {
       const displayName = name || cleanEmail.split("@")[0] || "Learner";
 
       let user = null;
-      if (useFirestore) {
-        const snapshot = await db
+      // Firestore is required for Google auth - file storage doesn't work in serverless
+      if (!useFirestore) {
+        return sendJson(res, 503, { error: "User accounts require Firebase Firestore in serverless mode. Set FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY environment variables." });
+      }
+      const snapshot = await db
+        .collection(COLLECTIONS.USERS)
+        .where("firebaseUid", "==", uid)
+        .limit(1)
+        .get();
+      if (!snapshot.empty) {
+        user = { ...snapshot.docs[0].data(), id: snapshot.docs[0].id };
+      } else {
+        const emailSnapshot = await db
           .collection(COLLECTIONS.USERS)
-          .where("firebaseUid", "==", uid)
+          .where("email", "==", cleanEmail)
           .limit(1)
           .get();
-        if (!snapshot.empty) {
-          user = { ...snapshot.docs[0].data(), id: snapshot.docs[0].id };
-        } else {
-          const emailSnapshot = await db
-            .collection(COLLECTIONS.USERS)
-            .where("email", "==", cleanEmail)
-            .limit(1)
-            .get();
-          if (!emailSnapshot.empty) {
-            user = { ...emailSnapshot.docs[0].data(), id: emailSnapshot.docs[0].id };
-          }
+        if (!emailSnapshot.empty) {
+          user = { ...emailSnapshot.docs[0].data(), id: emailSnapshot.docs[0].id };
         }
-      } else {
-        const users = await readUsers();
-        user = users.find(u => u.firebaseUid === uid) || users.find(u => u.email === cleanEmail);
       }
 
       if (user) {
@@ -659,13 +683,11 @@ async function handleApi(req, res, pathname) {
         user.lastLogin = new Date().toISOString();
         if (!user.firebaseUid) user.firebaseUid = uid;
         if (!user.authProvider) user.authProvider = "google";
-        if (useFirestore) {
-          await db.collection(COLLECTIONS.USERS).doc(user.id).update({
-            name: displayName, avatar: picture || null,
-            lastLogin: new Date().toISOString(),
-            firebaseUid: uid, authProvider: "google",
-          });
-        }
+        await db.collection(COLLECTIONS.USERS).doc(user.id).update({
+          name: displayName, avatar: picture || null,
+          lastLogin: new Date().toISOString(),
+          firebaseUid: uid, authProvider: "google",
+        });
       } else {
         const newUser = {
           id: uid, name: displayName, email: cleanEmail,
