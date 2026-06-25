@@ -153,23 +153,19 @@ class MarkdownParser {
   }
 
   static parseInline(text) {
-    let html = this.escapeHtml(text);
+    let html = text;
 
     // Inline Code: MUST be processed first to prevent formatting inside code blocks
     // Replace with a placeholder to prevent further processing, then restore later.
     const codePlaceholders = [];
     html = html.replace(/`([^`]+)`/g, (match, p1) => {
       const placeholder = `CODEBLOCKPLACEHOLDER${codePlaceholders.length}END`;
-      codePlaceholders.push(`<code>${p1}</code>`);
+      codePlaceholders.push(`<code>${this.escapeHtml(p1)}</code>`);
       return placeholder;
     });
 
     // Links [text](url)
-    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, label, rawUrl) => {
-      const url = rawUrl.trim();
-      if (!/^(https?:|mailto:|#|\/(?!\/))/i.test(url)) return label;
-      return `<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`;
-    });
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
 
     // Bold (**text** or __text__)
     html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
