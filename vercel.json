@@ -68,6 +68,10 @@
     {
       "source": "/algorithm-timeline",
       "destination": "/algorithm-timeline.html"
+    },
+    {
+      "source": "/api/battles/:path*",
+      "destination": "/api/battles"
     }
   ],
   "headers": [
