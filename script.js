@@ -1107,6 +1107,46 @@ function initPracticeSection() {
     });
   });
 
+  // AI Recommend Button
+  const aiRecommendBtn = document.getElementById("ai-recommend-btn");
+  if (aiRecommendBtn) {
+    aiRecommendBtn.addEventListener("click", async () => {
+      try {
+        aiRecommendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Finding...';
+        aiRecommendBtn.disabled = true;
+        
+        const res = await fetch("/api/recommendations/next");
+        if (res.status === 401) {
+           alert("Please log in to get AI recommendations.");
+           return;
+        }
+        const data = await res.json();
+        
+        if (data.success && data.recommendation) {
+           const rec = data.recommendation;
+           currentFilter = rec.topic.toLowerCase();
+           currentPage = 1;
+           
+           filterButtons.forEach((b) => {
+             if(b.dataset.filter === currentFilter) b.classList.add("active");
+             else b.classList.remove("active");
+           });
+           
+           renderProblems();
+           alert("AI Recommendation: " + rec.reason + "\n\n" + (rec.aiTip || ""));
+        } else {
+           alert("Could not get recommendation.");
+        }
+      } catch (err) {
+         console.error("AI recommend error:", err);
+         alert("Failed to fetch recommendation.");
+      } finally {
+         aiRecommendBtn.innerHTML = '<i class="fas fa-magic"></i> AI Recommend Next';
+         aiRecommendBtn.disabled = false;
+      }
+    });
+  }
+
   // Search bar
   const searchInput = document.getElementById("searchInput");
   const clearBtn = document.getElementById("clearSearchBtn");

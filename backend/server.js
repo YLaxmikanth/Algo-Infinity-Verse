@@ -1372,6 +1372,63 @@ async function handleApi(req, res, pathname) {
     });
   }
 
+  if (pathname === "/api/recommendations/next" && req.method === "GET") {
+    const session = getSession(req);
+    if (!session) return sendJson(res, 401, { error: "Login required." });
+
+    try {
+      const store = await readMemoryStore();
+      const userCards = store[session.sub] || {};
+      
+      const now = new Date();
+      // Find cards due for review
+      const dueCards = Object.values(userCards).filter(
+        (card) => new Date(card.nextReviewDate) <= now
+      );
+      
+      // Sort by SM-2 quality (lowest first) to prioritize weak areas
+      const weakCards = Object.values(userCards).sort((a, b) => a.quality - b.quality);
+      
+      let recommendedTopic = null;
+      let reason = "";
+
+      if (dueCards.length > 0) {
+        dueCards.sort((a, b) => new Date(a.nextReviewDate) - new Date(b.nextReviewDate));
+        recommendedTopic = dueCards[0].topic;
+        reason = `Based on your spaced repetition schedule, it's time to review ${recommendedTopic}.`;
+      } else if (weakCards.length > 0 && weakCards[0].quality < 4) {
+        recommendedTopic = weakCards[0].topic;
+        reason = `Your performance in ${recommendedTopic} indicates it's a weak area. We recommend practicing it.`;
+      } else {
+        recommendedTopic = "dp";
+        reason = "You're doing great! Keep pushing your boundaries with some advanced problems.";
+      }
+
+      // Generate AI tip
+      let aiTip = "";
+      try {
+        const { generateTopicMarkdown } = await import("./knowledge-base/llmClient.js");
+        if (generateTopicMarkdown) {
+          aiTip = `AI Insight: Mastering ${recommendedTopic} will significantly improve your overall problem-solving skills.`;
+        }
+      } catch (err) {
+        console.warn("LLM client not available for tip generation.");
+      }
+
+      return sendJson(res, 200, {
+        success: true,
+        recommendation: {
+          topic: recommendedTopic,
+          reason: reason,
+          aiTip: aiTip
+        }
+      });
+    } catch (err) {
+      console.error("Error generating recommendation:", err);
+      return sendJson(res, 500, { error: "Failed to generate recommendation." });
+    }
+  }
+
   return sendJson(res, 404, { error: "Not found." });
 }
 
