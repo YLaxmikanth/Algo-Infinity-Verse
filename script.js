@@ -1862,6 +1862,264 @@ function submitRoadmapQuiz(stepIndex, type = 'basic') {
   }
 }
 
+// Bind handlers to global window object
+window.selectQuizOption = selectQuizOption;
+window.submitRoadmapQuiz = submitRoadmapQuiz;
+window.openCodingProblem = openCodingProblem;
+window.openRoadmapStepModal = openRoadmapStepModal;
+
+// Gamification Modal Handlers (Fixes #1133)
+window.openGameModal = openGameModal;
+window.closeGameModal = closeGameModal;
+window.showGameTypeSelector = showGameTypeSelector;
+window.selectGameLevel = selectGameLevel;
+window.startGame = startGame;
+window.restartGame = restartGame;
+window.selectCodeAnswer = selectCodeAnswer;
+window.selectGameAnswer = selectGameAnswer;
+window.flipMemoryCard = flipMemoryCard;
+
+// ===== PROFILE =====
+function initProfile() {
+
+    var profileName = document.getElementById("profileName");
+    if (profileName) {
+        profileName.textContent = userProgress.name;
+    }
+    
+    // Set joined date
+    var joinDate = document.getElementById("joinDate");
+    if (joinDate) {
+        let joinDateObj;
+        if (userProgress.joinDate) {
+            joinDateObj = new Date(userProgress.joinDate);
+        } else {
+            joinDateObj = new Date();
+            userProgress.joinDate = joinDateObj.toISOString();
+            saveUserData();
+        }
+        joinDate.textContent = joinDateObj.toLocaleDateString("en-US", {
+            month: "long",
+            day: "numeric",
+            year: "numeric"
+        });
+    }
+    
+    // Set current date in dashboard
+    var currentDateElement = document.getElementById("current-date");
+    if (currentDateElement) {
+        var today = new Date();
+        currentDateElement.textContent = "Today: " + today.toLocaleDateString("en-US", {
+            month: "long",
+            day: "numeric",
+            year: "numeric"
+        });
+    }
+    
+    // Set current date in dashboard card
+    var dashboardCurrentDateElement = document.getElementById("dashboard-current-date");
+    if (dashboardCurrentDateElement) {
+        var today = new Date();
+        dashboardCurrentDateElement.textContent = "Today: " + today.toLocaleDateString("en-US", {
+            month: "long",
+            day: "numeric",
+            year: "numeric"
+        });
+    }
+    
+    var avatarIcon = document.querySelector('.avatar-icon');
+    if (avatarIcon) {
+        avatarIcon.textContent = userProgress.avatar || '🚀';
+    }
+    updateProfile();
+
+  var profileName = document.getElementById("profileName") || document.getElementById("profileDashboardName");
+  if (profileName) {
+    profileName.textContent = userProgress.name;
+  }
+  
+  // Set join date in userProgress if missing
+  if (!userProgress.joinDate) {
+    userProgress.joinDate = new Date().toISOString();
+    saveUserData();
+  }
+
+  var joinDate = document.getElementById("joinDate");
+  var joinDateSection = document.getElementById("joinDateSection") || document.getElementById("joinDateDashboard");
+  if (joinDate || joinDateSection) {
+    var dateVal = new Date(userProgress.joinDate);
+    var formattedDate = isNaN(dateVal.getTime()) ? userProgress.joinDate : dateVal.toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+    if (joinDate) joinDate.textContent = formattedDate;
+    if (joinDateSection) joinDateSection.textContent = formattedDate;
+  }
+  var currentDate = document.getElementById("current-date");
+  if (currentDate) {
+    currentDate.textContent = new Date().toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+    });
+  }
+  var avatarIcon = document.querySelector(".avatar-icon");
+  if (avatarIcon) {
+    avatarIcon.textContent = userProgress.avatar || "🚀";
+  }
+  updateProfile();
+
+}
+
+function updateProfile() {
+  var levelNames = [
+    "Beginner",
+    "Novice",
+    "Intermediate",
+    "Advanced",
+    "Expert",
+    "Master",
+    "Grandmaster",
+    "Legend",
+  ];
+  var profileLevel = document.getElementById("profileLevel");
+  if (profileLevel) {
+    profileLevel.textContent =
+      "Level " +
+      userProgress.level +
+      " - " +
+      levelNames[userProgress.level - 1];
+  }
+
+  // Profile Section Level
+  var profileLevelSection = document.getElementById("profileLevelSection");
+  if (profileLevelSection) {
+    profileLevelSection.textContent =
+      "Level " +
+      userProgress.level +
+      " - " +
+      levelNames[userProgress.level - 1];
+  }
+
+  var profileXP = document.getElementById("profileTotalXP");
+  if (profileXP) profileXP.textContent = userProgress.xp.toLocaleString();
+
+  // Profile Section XP
+  var profileXPSection = document.getElementById("profileTotalXPSection");
+  if (profileXPSection)
+    profileXPSection.textContent = userProgress.xp.toLocaleString();
+
+  var profileProblems = document.getElementById("profileProblems");
+  if (profileProblems)
+    profileProblems.textContent = userProgress.completedProblems.length;
+
+  // Profile Section Problems
+  var profileProblemsSection = document.getElementById(
+    "profileProblemsSection",
+  );
+  if (profileProblemsSection)
+    profileProblemsSection.textContent = userProgress.completedProblems.length;
+
+  var profileStreak = document.getElementById("profileStreak");
+  if (profileStreak) profileStreak.textContent = userProgress.streak;
+
+  var profileFreezes = document.getElementById("profileFreezes");
+  if (profileFreezes) profileFreezes.textContent = userProgress.freezes || 0;
+
+  var profileSectionStreak = document.getElementById("profileSectionStreak");
+  if (profileSectionStreak)
+    profileSectionStreak.textContent = userProgress.streak;
+    
+  var profileSectionFreezes = document.getElementById("profileSectionFreezes");
+  if (profileSectionFreezes)
+    profileSectionFreezes.textContent = userProgress.freezes || 0;
+
+  var profileBadges = document.getElementById("profileBadges");
+
+  if (profileBadges) {
+    var badges = [
+      userProgress.completedProblems.length >= 1,
+      userProgress.streak >= 7,
+      userProgress.xp >= 5000,
+      userProgress.completedProblems.length >= 50,
+      userProgress.completedProblems.length >= 100,
+      userProgress.completedProblems.length >= 25 && userProgress.xp >= 2500,
+    ].filter(Boolean).length;
+
+    profileBadges.textContent = badges;
+
+    // Profile Section Badges
+    var profileBadgesSection = document.getElementById("profileBadgesSection");
+
+    if (profileBadgesSection) {
+      profileBadgesSection.textContent = badges;
+    }
+  }
+
+  // Update profile name in dashboard
+  var dashboardProfileName = document.getElementById("profileName") || document.getElementById("profileDashboardName");
+  if (dashboardProfileName) {
+    dashboardProfileName.textContent = userProgress.name;
+  }
+
+  // Update profile name in profile section
+  var profileSectionName = document.getElementById("profileSectionName");
+  if (profileSectionName) {
+    profileSectionName.textContent = userProgress.name;
+  }
+
+  // Update avatar
+  document.querySelectorAll(".avatar-icon").forEach((el) => {
+    el.textContent = userProgress.avatar || "🚀";
+  });
+
+  updateLevelProgress();
+}
+
+function updateLevelProgress() {
+  var levels = [0, 1000, 2500, 5000, 10000, 20000, 50000, 100000];
+
+  var currentLevel = userProgress.level;
+
+  var currentLevelXP = levels[Math.max(0, currentLevel - 1)];
+
+  var nextLevelXP = levels[currentLevel] || 100000;
+
+  var xpProgress =
+    ((userProgress.xp - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100;
+
+  var progressPercent = Math.min(Math.max(xpProgress, 0), 100);
+
+  // Dashboard Progress Bar
+  var progressBar = document.getElementById("profileProgressBar");
+
+  var progressLabel = document.getElementById("profileLevelProgress");
+
+  if (progressBar) progressBar.style.width = progressPercent + "%";
+
+  if (progressLabel)
+    progressLabel.textContent = Math.round(progressPercent) + "%";
+
+  // Profile Section Progress Bar
+  var progressBarSection = document.getElementById("profileProgressBarSection");
+
+  var progressLabelSection = document.getElementById(
+    "profileLevelProgressSection",
+  );
+
+  if (progressBarSection)
+    progressBarSection.style.width = progressPercent + "%";
+
+  if (progressLabelSection)
+    progressLabelSection.textContent = Math.round(progressPercent) + "%";
+}
+
+// ===== DASHBOARD =====
+function initDashboard() {
+  updateDashboard();
+  updateProfile();
+}
 // ============================================
 // DASHBOARD
 // ============================================
