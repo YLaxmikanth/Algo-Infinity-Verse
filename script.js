@@ -2071,6 +2071,10 @@ async function getAuthenticatedSession() {
   return cachedSession;
 }
 
+function initFlashcardsRevision() {
+  console.log("initFlashcardsRevision stub called");
+}
+
 function loadUserData() {
   try {
     const saved = localStorage.getItem("algoInfinityVerse");
