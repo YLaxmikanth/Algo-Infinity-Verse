@@ -11,7 +11,7 @@ const HTML_ESCAPE_MAP = {
     '<': '&lt;',
     '>': '&gt;',
     '"': '&quot;',
-    "'": '&`#39`;'
+    "'": '&#39;'
 };
 
 function escapeHtml(value) {
@@ -41,7 +41,6 @@ function highlightText(text, searchTerm) {
     });
 
     return highlighted + escapeHtml(source.slice(lastIndex));
-}
 }
 
 /**
