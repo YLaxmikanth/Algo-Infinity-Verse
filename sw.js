@@ -11,7 +11,18 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(self.clients.claim());
+  // Purge caches from previous CACHE_VERSIONs so a version bump actually
+  // invalidates stale assets and Cache Storage does not grow unbounded.
+  event.waitUntil(
+    (async () => {
+      const keep = new Set([CACHE_NAME, DYNAMIC_CACHE]);
+      const keys = await caches.keys();
+      await Promise.all(
+        keys.filter((key) => !keep.has(key)).map((key) => caches.delete(key))
+      );
+      await self.clients.claim();
+    })()
+  );
 });
 
 self.addEventListener('fetch', (event) => {
