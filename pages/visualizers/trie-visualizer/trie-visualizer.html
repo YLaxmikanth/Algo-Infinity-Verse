@@ -67,8 +67,14 @@
           </div>
         </div>
         <div class="trie-tree-wrap">
-          <svg id="trieLinesSvg" class="trie-lines-svg"></svg>
-          <div id="trieTreeArea" class="trie-tree-area"></div>
+          <svg id="trieLinesSvg" class="trie-lines-svg" aria-hidden="true" focusable="false"></svg>
+          <div
+            id="trieTreeArea"
+            class="trie-tree-area"
+            role="region"
+            aria-label="Trie visualization"
+            aria-describedby="statusBox explanationBox stepCounter"
+          ></div>
         </div>
       </main>
     </div>
