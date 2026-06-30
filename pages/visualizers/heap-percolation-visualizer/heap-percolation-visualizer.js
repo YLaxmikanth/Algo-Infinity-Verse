@@ -153,8 +153,7 @@ class Heap {
       this.recordStep('Heap is now empty.', []);
       return this.steps;
     }
-
-    this.heap.unshift(last);
+    this.heap[0] = last;
     this.recordStep(`Moved the last value ${last} to the root.`, [0]);
     this.siftDown(0);
     this.recordStep(`Finished extracting root ${root}.`, [0]);
