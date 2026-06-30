@@ -229,14 +229,13 @@ function initHeapVisualizer() {
   const btnPlay = document.getElementById('btn-play');
   const btnReset = document.getElementById('btn-reset');
 
-  let heapType = 'min';
-  let heap = new Heap(heapType);
-  window.heap = heap;
-  let steps = [];
-  let currentStep = -1;
   let isPlaying = false;
   let playTimer = null;
   let animationSpeed = parseInt(speedSlider.value, 10);
+
+  function syncHeapState() {
+    window.heap = heap;
+  }
 
   function updateButtons() {
     btnPrev.disabled = currentStep <= 0;
