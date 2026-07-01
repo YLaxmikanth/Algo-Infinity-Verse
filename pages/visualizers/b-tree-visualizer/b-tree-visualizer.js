@@ -270,8 +270,8 @@ function runInsert() {
     btState.steps.push({ tree: cloneTree(btState.tree.root), message, highlightNodes: extras.highlightNodes || [], promotedKey: extras.promotedKey ?? null, searchKey: null });
   });
   if (!btState.steps.length) captureStep(`Inserted key ${key}.`, { highlightNodes: [], promotedKey: null, searchKey: null });
-  btState.stepIndex = 0;
   applyStep(0);
+  btState.stepIndex = 1;
   btSetStatus(`Inserted key ${key}`);
   btSetExplanation(btState.steps[0]?.message || `Inserted key ${key}`);
   updatePlaybackButtons();
