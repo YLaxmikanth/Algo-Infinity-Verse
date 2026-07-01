@@ -260,7 +260,10 @@ function runInsert() {
   const degree = parseInt(document.getElementById('btDegree')?.value || '2', 10);
   const key = parseInt(document.getElementById('btInsertKey')?.value || '', 10);
   if (!Number.isFinite(key)) { btSetStatus('Enter a valid insert key.'); return; }
-  btState.tree.setDegree(degree);
+  if (Number.isFinite(degree) && degree !== btState.tree.t) {
+    btSetStatus('Degree changed — please Reset before inserting.');
+    return;
+  }
   btState.steps = [];
   btState.stepIndex = 0;
   btState.pendingKey = key;
