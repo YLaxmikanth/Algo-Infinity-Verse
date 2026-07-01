@@ -1798,6 +1798,14 @@ if (pathname === "/api/forgot-password" && req.method === "POST") {
     // Always return success to prevent email enumeration
     return sendJson(res, 200, { message: "Reset email sent if account exists." });
   }
+  if (pathname === "/api/logout" && req.method === "POST") {
+    return sendJson(
+      res,
+      200,
+      { ok: true },
+      { "Set-Cookie": clearAuthCookies() },
+    );
+  }
 
   if (pathname === "/api/feedback" && req.method === "POST") {
     const session = getSession(req);
@@ -2444,22 +2452,8 @@ if (pathname === "/api/forgot-password" && req.method === "POST") {
     const difficulty = ["Easy", "Medium", "Hard"].includes(body.difficulty) ? body.difficulty : "Medium";
     const topic = body.topic || "arrays";
 
-    // Generate a unique room ID, retrying on collision so a new room can
-    // never silently overwrite (evict) an existing one.
-    let roomId;
-    for (let attempt = 0; ; attempt++) {
-      const candidate = "ROOM-" + Math.floor(10000 + Math.random() * 90000);
-      if (!studyRooms.has(candidate)) {
-        roomId = candidate;
-        break;
-      }
-      // Fall back to a collision-resistant ID if the small space is saturated.
-      if (attempt >= 10) {
-        roomId = "ROOM-" + crypto.randomUUID();
-        break;
-      }
-    }
-
+    const roomId = "ROOM-" + Math.floor(10000 + Math.random() * 90000);
+    
     let hostName = "Host";
     const users = await readUsers();
     const hostUser = users.find(u => u.id === session.sub);
