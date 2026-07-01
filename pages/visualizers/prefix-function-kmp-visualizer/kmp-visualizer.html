@@ -63,7 +63,7 @@
             <div class="kmp-step-counter">Step <span id="kmpStepNum">0</span> / <span id="kmpStepTotal">0</span></div>
           </div>
         </div>
-        <div class="kmp-status-panel">
+        <div class="kmp-status-panel" aria-live="polite">
           <div class="kmp-status-badge" id="kmpStatusBadge">Idle</div>
           <div class="kmp-status-text" id="kmpStatusText">Enter a pattern, then compute the LPS array or run the full KMP match.</div>
         </div>
@@ -95,7 +95,7 @@
         </div>
         <div class="kmp-explanation-card">
           <div class="kmp-block-title">Explanation Panel</div>
-          <div class="kmp-explanation" id="kmpExplanation">Every step will explain exactly what happened.</div>
+          <div class="kmp-explanation" id="kmpExplanation" aria-live="polite">Every step will explain exactly what happened.</div>
         </div>
         <div class="kmp-status-grid">
           <div class="kmp-mini-card">
