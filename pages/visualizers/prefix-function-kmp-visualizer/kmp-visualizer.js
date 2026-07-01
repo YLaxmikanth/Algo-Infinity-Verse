@@ -45,7 +45,13 @@ function kmpBuildMatchSteps(text, pattern, lps) {
 function kmpRenderCells(container, values, stateGetter) {
   const el = document.getElementById(container);
   if (!el) return;
-  el.innerHTML = values.map((value, idx) => `<div class="kmp-cell ${stateGetter ? stateGetter(idx) : ''}">${value === '' ? '&nbsp;' : value}</div>`).join('');
+  el.innerHTML = '';
+  values.forEach((value, idx) => {
+    const div = document.createElement('div');
+    div.className = `kmp-cell ${stateGetter ? stateGetter(idx) : ''}`;
+    div.textContent = value === '' ? '\u00a0' : value;
+    el.appendChild(div);
+  });
 }
 
 function kmpRenderPointers(container, i, j, mode) {
