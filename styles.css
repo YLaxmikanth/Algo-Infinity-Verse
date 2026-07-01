@@ -9846,3 +9846,337 @@ mark.search-highlight {
     }
   }
 }
+/* ===== KEYBOARD SHORTCUTS ===== */
+
+/* Shortcuts Toggle Button */
+.shortcuts-toggle-btn {
+    position: fixed;
+    bottom: 30px;
+    left: 30px;
+    z-index: 998;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    font-family: 'Poppins', sans-serif;
+}
+
+.shortcuts-toggle-btn:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(124, 58, 237, 0.3);
+}
+
+.shortcuts-toggle-btn i {
+    font-size: 1rem;
+}
+
+.shortcuts-toggle-btn .shortcut-hint {
+    font-size: 0.7rem;
+    opacity: 0.6;
+    font-weight: 400;
+}
+
+/* Shortcuts Modal */
+.shortcuts-modal .modal-content {
+    max-width: 700px;
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+.shortcuts-modal-content {
+    padding: 0 !important;
+}
+
+.shortcuts-modal .modal-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.shortcuts-modal .modal-header h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.shortcuts-modal .modal-header h3 i {
+    color: var(--primary);
+}
+
+.shortcuts-modal .modal-body {
+    padding: 20px 24px 16px;
+}
+
+.shortcuts-intro {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+}
+
+.shortcuts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.shortcuts-section {
+    background: var(--bg-primary);
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid var(--border-color);
+}
+
+.shortcuts-section h4 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.shortcuts-section h4 i {
+    color: var(--primary);
+}
+
+.shortcuts-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.shortcuts-table tr {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.shortcuts-table tr:last-child {
+    border-bottom: none;
+}
+
+.shortcuts-table td {
+    padding: 6px 0;
+    color: var(--text-secondary);
+}
+
+.shortcuts-table td:first-child {
+    color: var(--text-primary);
+    font-weight: 500;
+    min-width: 120px;
+}
+
+.shortcuts-table kbd {
+    display: inline-block;
+    padding: 2px 8px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-family: 'Fira Code', monospace;
+    color: var(--text-primary);
+}
+
+.shortcuts-footer {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+}
+
+.shortcuts-tip {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.shortcuts-tip i {
+    color: #fbbf24;
+    margin-right: 6px;
+}
+
+.shortcuts-tip kbd {
+    display: inline-block;
+    padding: 1px 6px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    font-size: 0.7rem;
+    font-family: 'Fira Code', monospace;
+    font-weight: 600;
+}
+
+.shortcuts-modal .modal-footer {
+    padding: 12px 24px 20px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+}
+
+.shortcuts-modal .modal-footer kbd {
+    display: inline-block;
+    padding: 1px 6px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    font-size: 0.7rem;
+    font-family: 'Fira Code', monospace;
+    font-weight: 600;
+}
+
+/* Dark Theme */
+.dark .shortcuts-toggle-btn {
+    background: #1e293b;
+    border-color: #334155;
+    color: #f1f5f9;
+}
+
+.dark .shortcuts-toggle-btn:hover {
+    background: #7c3aed;
+    border-color: #7c3aed;
+}
+
+.dark .shortcuts-section {
+    background: #0f172a;
+    border-color: #334155;
+}
+
+.dark .shortcuts-table tr {
+    border-color: #334155;
+}
+
+.dark .shortcuts-table kbd {
+    background: #1e293b;
+    border-color: #334155;
+    color: #f1f5f9;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .shortcuts-toggle-btn {
+        bottom: 20px;
+        left: 20px;
+        padding: 8px 14px;
+        font-size: 0.8rem;
+        border-radius: 10px;
+    }
+    
+    .shortcuts-toggle-btn span:not(.shortcut-hint) {
+        display: none;
+    }
+    
+    .shortcuts-toggle-btn .shortcut-hint {
+        font-size: 0.9rem;
+        opacity: 1;
+    }
+    
+    .shortcuts-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .shortcuts-modal .modal-content {
+        max-width: 95%;
+        margin: 20px;
+    }
+    
+    .shortcuts-table td {
+        font-size: 0.8rem;
+        padding: 4px 0;
+    }
+    
+    .shortcuts-table td:first-child {
+        min-width: 80px;
+    }
+}
+
+@media (max-width: 480px) {
+    .shortcuts-toggle-btn {
+        bottom: 16px;
+        left: 16px;
+        padding: 6px 12px;
+        font-size: 0.75rem;
+        border-radius: 8px;
+    }
+    
+    .shortcuts-modal .modal-content {
+        max-width: 98%;
+        margin: 10px;
+    }
+    
+    .shortcuts-modal .modal-header {
+        padding: 14px 16px 12px;
+    }
+    
+    .shortcuts-modal .modal-body {
+        padding: 14px 16px 12px;
+    }
+    
+    .shortcuts-section {
+        padding: 12px;
+    }
+    
+    .shortcuts-table td {
+        font-size: 0.75rem;
+        padding: 3px 0;
+    }
+    
+    .shortcuts-table td:first-child {
+        min-width: 60px;
+    }
+    
+    .shortcuts-table kbd {
+        font-size: 0.65rem;
+        padding: 1px 5px;
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .shortcuts-toggle-btn {
+        transition: none;
+    }
+    
+    .shortcuts-toggle-btn:hover {
+        transform: none;
+    }
+}
+
+/* Dark theme modal overrides */
+.dark .shortcuts-modal .modal-content {
+    background: #1e293b;
+}
+
+.dark .shortcuts-modal .modal-header {
+    border-color: #334155;
+}
+
+.dark .shortcuts-modal .modal-footer {
+    border-color: #334155;
+}
+
+.dark .shortcuts-tip kbd {
+    background: #0f172a;
+    border-color: #334155;
+    color: #f1f5f9;
+}
+/* Modal Open State */
+body.modal-open {
+    overflow: hidden;
+}
