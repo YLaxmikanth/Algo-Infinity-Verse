@@ -33,6 +33,7 @@
         isRefreshing = true;
         refreshPromise = originalFetch('/api/refresh', {
           method: 'POST',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' }
         }).then(res => {
           isRefreshing = false;
