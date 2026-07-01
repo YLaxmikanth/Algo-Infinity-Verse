@@ -5489,252 +5489,104 @@ window.addEventListener('load', () => {
 });
 
 // ============================================
-// SEARCH AUTOCOMPLETE
-// ============================================
-
-// DOM Elements
-const searchInput = document.getElementById('searchInput');
-const searchSuggestions = document.getElementById('searchSuggestions');
-const clearSearchBtn = document.getElementById('clearSearchBtn');
-
-// State
-let currentSuggestions = [];
-let selectedSuggestionIndex = -1;
-let isNavigatingSuggestions = false;
-
-/**
- * Get search suggestions based on input
- * @param {string} searchTerm - The search term
- * @returns {Array} Array of suggestions
- */
-function getSuggestions(searchTerm) {
-    if (!searchTerm || searchTerm.length < 2) return [];
-    
-    const term = searchTerm.toLowerCase();
-    const suggestions = [];
-    const seen = new Set();
-    const allProblems = getProblems();
-    
-    allProblems.forEach(problem => {
-        // Check title
-        if (problem.title.toLowerCase().includes(term)) {
-            const key = `title-${problem.id}`;
-            if (!seen.has(key)) {
-                seen.add(key);
-                suggestions.push({
-                    text: problem.title,
-                    type: 'title',
-                    id: problem.id,
-                    match: term
-                });
-            }
-        }
-        
-        // Check description
-        if (problem.description && problem.description.toLowerCase().includes(term)) {
-            const key = `desc-${problem.id}`;
-            if (!seen.has(key)) {
-                seen.add(key);
-                suggestions.push({
-                    text: problem.description.substring(0, 60) + '...',
-                    type: 'description',
-                    id: problem.id,
-                    match: term
-                });
-            }
-        }
-        
-        // Check tags
-        if (problem.tags) {
-            problem.tags.forEach(tag => {
-                if (tag.toLowerCase().includes(term)) {
-                    const key = `tag-${tag}-${problem.id}`;
-                    if (!seen.has(key)) {
-                        seen.add(key);
-                        suggestions.push({
-                            text: tag,
-                            type: 'tag',
-                            id: problem.id,
-                            match: term
-                        });
-                    }
-                }
-            });
-        }
-        
-        // Check category/topic
-        if (problem.category && problem.category.toLowerCase().includes(term)) {
-            const key = `cat-${problem.category}`;
-            if (!seen.has(key)) {
-                seen.add(key);
-                suggestions.push({
-                    text: problem.category,
-                    type: 'topic',
-                    id: problem.id,
-                    match: term
-                });
-            }
-        }
-    });
-    
-    // Limit suggestions and remove duplicates
-    const uniqueSuggestions = [];
-    const textSeen = new Set();
-    suggestions.forEach(s => {
-        const key = s.text.toLowerCase();
-        if (!textSeen.has(key)) {
-            textSeen.add(key);
-            uniqueSuggestions.push(s);
-        }
-    });
-    
-    return uniqueSuggestions.slice(0, 8);
-}
-
-/**
- * Highlight matching text in suggestion
- * @param {string} text - The text to highlight
- * @param {string} match - The term to match
- * @returns {string} HTML with highlighted text
- */
-function highlightMatch(text, match) {
-    if (!match || !text) return text;
-    const regex = new RegExp(`(${match.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-    return text.replace(regex, '<span class="highlight">$1</span>');
-}
-
-/**
- * Render search suggestions
- * @param {Array} suggestions - List of suggestions
- * @param {string} searchTerm - Current search term
- */
-function renderSuggestions(suggestions, searchTerm) {
-    if (!searchSuggestions) return;
-    
-    // Clear previous suggestions
-    selectedSuggestionIndex = -1;
-    
-    if (!suggestions || suggestions.length === 0) {
-        if (searchTerm && searchTerm.length >= 2) {
-            searchSuggestions.innerHTML = `
-                <div class="suggestion-no-results">
-                    <i class="fas fa-search"></i>
-                    No results found for "<strong>${escapeHtml(searchTerm)}</strong>"
-                </div>
-            `;
-            searchSuggestions.classList.add('visible');
-        } else {
-            searchSuggestions.classList.remove('visible');
-        }
-        return;
-    }
-    
-    // Group suggestions by type
-    const grouped = {
-        title: [],
-        tag: [],
-        topic: [],
-        description: []
-    };
-    
-    suggestions.forEach(s => {
-        if (grouped[s.type]) {
-            grouped[s.type].push(s);
-        }
-    });
-    
-    let html = '';
-    const typeLabels = {
-        title: '📝 Problems',
-        tag: '🏷️ Tags',
-        topic: '📚 Topics',
-        description: '📄 Descriptions'
-    };
-    
-    ['title', 'topic', 'tag', 'description'].forEach(type => {
-        if (grouped[type] && grouped[type].length > 0) {
-            html += `<div class="suggestion-group-header">${typeLabels[type] || type}</div>`;
-            grouped[type].forEach(s => {
-                const highlighted = highlightMatch(s.text, searchTerm);
-                const typeClass = s.type;
-                html += `
-                    <div class="suggestion-item" data-id="${s.id}" data-type="${s.type}" role="option">
-                        <span class="suggestion-icon">${s.type === 'title' ? '📝' : s.type === 'tag' ? '🏷️' : s.type === 'topic' ? '📚' : '📄'}</span>
-                        <span class="suggestion-text">${highlighted}</span>
-                        <span class="suggestion-type ${typeClass}">${s.type}</span>
-                    </div>
-                `;
-            });
-        }
-    });
-    
-    searchSuggestions.innerHTML = html;
-    searchSuggestions.classList.add('visible');
-    
-    // Add click listeners to suggestions
-    searchSuggestions.querySelectorAll('.suggestion-item').forEach(item => {
-        item.addEventListener('click', function() {
-            const text = this.querySelector('.suggestion-text')?.textContent || '';
-            const id = this.dataset.id;
-            const type = this.dataset.type;
-            selectSuggestion(text, id, type);
-        });
-        
-        // Hover effect
-        item.addEventListener('mouseenter', function() {
-            const items = searchSuggestions.querySelectorAll('.suggestion-item');
-            items.forEach(el => el.classList.remove('active'));
-            this.classList.add('active');
-            selectedSuggestionIndex = Array.from(items).indexOf(this);
-        });
-    });
-    
-    // Update ARIA attributes
-    searchInput.setAttribute('aria-expanded', 'true');
-}
-
-/**
- * Select a suggestion
- * @param {string} text - Selected suggestion text
- * @param {number} id - Problem ID
- * @param {string} type - Suggestion type
- */
-function selectSuggestion(text, id, type) {
-    if (searchInput) {
-        searchInput.value = text;
-        // Trigger search with the selected text
-        const event = new Event('input', { bubbles: true });
-        searchInput.dispatchEvent(event);
-    }
-    
-    // Hide suggestions
-    if (searchSuggestions) {
-        searchSuggestions.classList.remove('visible');
-        searchInput.setAttribute('aria-expanded', 'false');
-    }
-    
-    // If it's a problem title, open it directly
-    if (type === 'title' && id) {
-        const problem = getProblemById(id);
-        if (problem) {
-            handleProblemClick(id);
-        }
-    }
-}
-
-/**
- * Get problem by ID
- * @param {number} id - Problem ID
- * @returns {Object|null} Problem object
- */
-function getProblemById(id) {
-    const problems = getProblems();
-    return problems.find(p => p.id === parseInt(id)) || null;
-
-
-// ============================================
 // PROBLEM FILTERING WITH CORRECT COUNT
 // ============================================
+
+/**
+ * Get selected difficulty from filter buttons
+ * @returns {string} Selected difficulty ('all', 'easy', 'medium', 'hard')
+ */
+function getSelectedDifficulty() {
+    const activeFilter = document.querySelector('.filter-btn.active');
+    if (activeFilter) {
+        return activeFilter.dataset.filter || 'all';
+    }
+    return 'all';
+}
+
+/**
+ * Update the problem count display
+ * @param {Array} filteredProblems - Array of filtered problems
+ */
+function updateProblemCount(filteredProblems) {
+    // Update visible count
+    const visibleCountEl = document.getElementById('visible-count');
+    if (visibleCountEl) {
+        const total = filteredProblems.length;
+        visibleCountEl.textContent = total;
+    }
+    
+    // Update total count (if separate)
+    const totalCountEl = document.getElementById('total-count');
+    if (totalCountEl) {
+        // This should show total problems before filtering
+        const allProblems = getAllProblems();
+        totalCountEl.textContent = allProblems.length;
+    }
+    
+    // Update the problem count display (legacy)
+    const countElement = document.querySelector('.problem-count');
+    if (countElement) {
+        const total = filteredProblems.length;
+        countElement.textContent = `${total} problem${total !== 1 ? 's' : ''}`;
+    }
+    
+    // Show/hide empty state
+    const emptyState = document.getElementById('emptyState');
+    if (emptyState) {
+        if (filteredProblems.length === 0) {
+            emptyState.classList.remove('hidden');
+        } else {
+            emptyState.classList.add('hidden');
+        }
+    }
+}
+
+/**
+ * Get all problems (from your data source)
+ * @returns {Array} All practice problems
+ */
+function getAllProblems() {
+    // Use your existing problems data
+    return practiceProblems || window.practiceProblems || [];
+}
+
+/**
+ * Filter problems based on selected difficulty
+ * @param {string} difficulty - 'all', 'easy', 'medium', 'hard'
+ * @param {Array} problems - Problems to filter
+ * @returns {Array} Filtered problems
+ */
+function filterProblemsByDifficulty(difficulty, problems) {
+    if (difficulty === 'all') {
+        return problems;
+    }
+    return problems.filter(problem => 
+        problem.difficulty.toLowerCase() === difficulty.toLowerCase()
+    );
+}
+
+/**
+ * Main filter function - handles filtering AND count update
+ */
+function filterProblems() {
+    const selectedDifficulty = getSelectedDifficulty();
+    const allProblems = getAllProblems();
+    
+    // Filter problems
+    const filtered = filterProblemsByDifficulty(selectedDifficulty, allProblems);
+    
+    // Render filtered problems
+    renderProblems(filtered);
+    
+    // Update count
+    updateProblemCount(filtered);
+    
+    // Update URL hash if needed (for bookmarking)
+    if (selectedDifficulty !== 'all') {
+        window.location.hash = `filter=${selectedDifficulty}`;
+    }
+}
 
 /**
  * Get filter from URL hash on page load
@@ -5843,185 +5695,10 @@ function getSelectedDifficulty() {
         return activeFilter.dataset.filter || 'all';
     }
     return 'all';
-
 }
 
 /**
  * Get all problems
-
- * @returns {Array} List of problems
- */
-function getProblems() {
-    return window.practiceProblems || [];
-}
-
-/**
- * Escape HTML for safety
- * @param {string} str - String to escape
- * @returns {string} Escaped string
- */
-function escapeHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-}
-
-// --- Keyboard Navigation ---
-
-/**
- * Handle keyboard navigation in suggestions
- * @param {KeyboardEvent} e - Keyboard event
- */
-function handleSuggestionKeyboard(e) {
-    if (!searchSuggestions || !searchSuggestions.classList.contains('visible')) return;
-    
-    const items = searchSuggestions.querySelectorAll('.suggestion-item');
-    if (items.length === 0) return;
-    
-    switch (e.key) {
-        case 'ArrowDown':
-            e.preventDefault();
-            selectedSuggestionIndex = Math.min(selectedSuggestionIndex + 1, items.length - 1);
-            updateActiveSuggestion(items);
-            break;
-            
-        case 'ArrowUp':
-            e.preventDefault();
-            selectedSuggestionIndex = Math.max(selectedSuggestionIndex - 1, 0);
-            updateActiveSuggestion(items);
-            break;
-            
-        case 'Enter':
-            e.preventDefault();
-            if (selectedSuggestionIndex >= 0 && selectedSuggestionIndex < items.length) {
-                const activeItem = items[selectedSuggestionIndex];
-                const text = activeItem.querySelector('.suggestion-text')?.textContent || '';
-                const id = activeItem.dataset.id;
-                const type = activeItem.dataset.type;
-                selectSuggestion(text, id, type);
-            }
-            break;
-            
-        case 'Escape':
-            e.preventDefault();
-            searchSuggestions.classList.remove('visible');
-            searchInput.setAttribute('aria-expanded', 'false');
-            searchInput.focus();
-            break;
-    }
-}
-
-/**
- * Update active suggestion visually
- * @param {NodeList} items - Suggestion items
- */
-function updateActiveSuggestion(items) {
-    items.forEach((item, index) => {
-        item.classList.toggle('active', index === selectedSuggestionIndex);
-    });
-    
-    // Scroll to active item
-    const activeItem = items[selectedSuggestionIndex];
-    if (activeItem) {
-        activeItem.scrollIntoView({ block: 'nearest' });
-    }
-}
-
-// --- Initialize Search Autocomplete ---
-
-/**
- * Initialize search autocomplete
- */
-function initSearchAutocomplete() {
-    if (!searchInput) return;
-    
-    // Input handler
-    searchInput.addEventListener('input', function() {
-        const value = this.value.trim();
-        
-        // Show/hide clear button
-        if (clearSearchBtn) {
-            clearSearchBtn.classList.toggle('visible', value.length > 0);
-        }
-        
-        if (value.length >= 2) {
-            const suggestions = getSuggestions(value);
-            renderSuggestions(suggestions, value);
-        } else {
-            if (searchSuggestions) {
-                searchSuggestions.classList.remove('visible');
-                searchInput.setAttribute('aria-expanded', 'false');
-            }
-        }
-    });
-    
-    // Keyboard navigation
-    searchInput.addEventListener('keydown', handleSuggestionKeyboard);
-    
-    // Focus handler - show suggestions if there's text
-    searchInput.addEventListener('focus', function() {
-        const value = this.value.trim();
-        if (value.length >= 2) {
-            const suggestions = getSuggestions(value);
-            renderSuggestions(suggestions, value);
-        }
-    });
-    
-    // Blur handler - hide suggestions with delay
-    searchInput.addEventListener('blur', function() {
-        setTimeout(() => {
-            if (searchSuggestions) {
-                searchSuggestions.classList.remove('visible');
-                searchInput.setAttribute('aria-expanded', 'false');
-            }
-            selectedSuggestionIndex = -1;
-        }, 200);
-    });
-    
-    // Clear button
-    if (clearSearchBtn) {
-        clearSearchBtn.addEventListener('click', function() {
-            searchInput.value = '';
-            searchInput.focus();
-            this.classList.remove('visible');
-            
-            if (searchSuggestions) {
-                searchSuggestions.classList.remove('visible');
-                searchInput.setAttribute('aria-expanded', 'false');
-            }
-            
-            // Trigger search with empty value
-            const event = new Event('input', { bubbles: true });
-            searchInput.dispatchEvent(event);
-        });
-    }
-    
-    // Handle clicks outside
-    document.addEventListener('click', function(e) {
-        const wrapper = document.querySelector('.search-wrapper');
-        if (wrapper && !wrapper.contains(e.target)) {
-            if (searchSuggestions) {
-                searchSuggestions.classList.remove('visible');
-                searchInput.setAttribute('aria-expanded', 'false');
-            }
-        }
-    });
-}
-
-// Initialize on DOM ready
-document.addEventListener('DOMContentLoaded', function() {
-    initSearchAutocomplete();
-});
-
-// Export functions
-export {
-    getSuggestions,
-    renderSuggestions,
-    selectSuggestion,
-    highlightMatch,
-    initSearchAutocomplete
-};
-
  */
 function getAllProblems() {
     return practiceProblems || [];
@@ -6123,4 +5800,3 @@ function updateProblemCount(filteredProblems) {
         countElement.textContent = `${total} problem${total !== 1 ? 's' : ''}`;
     }
 }
-
