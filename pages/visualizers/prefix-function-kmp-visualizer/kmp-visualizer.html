@@ -143,9 +143,7 @@
     <script src="kmp-visualizer.js"></script>
     <script>
       if (typeof loadPartial === 'function') {
-        loadPartial('navbar-placeholder', '/partials/navbar.html').then(function() {
-          if (typeof initNavbar === 'function') initNavbar();
-        });
+        loadPartial('navbar-placeholder', '/partials/navbar.html');
         loadPartial('footer-placeholder', '/partials/footer.html');
       }
     </script>
